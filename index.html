@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#11100f">
-<meta name="description" content="Hill Country Hunting — Know the land. Hunt the wind.">
+<meta name="description" content="In Sight Outdoors — Hill Country. Never a Good Wind.">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<title>Hill Country Hunting</title>
+<title>In Sight Outdoors</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--bg:#090909;--panel:#171513;--panel2:#24201c;--gold:#ff5a1f;--cream:#f2dfbd;--muted:#b7aa98;--line:#514236;--red:#ff704d;--green:#d6a56d}
@@ -117,6 +117,19 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 #fieldResourcesPanel summary::-webkit-details-marker{color:var(--gold)}
 #fieldResourcesPanel input,#fieldResourcesPanel select,#fieldResourcesPanel textarea{max-width:100%;min-width:0}
 
+
+/* v0.9.0 account and membership */
+.accountPanel{border-color:#9a4b2b;width:calc(100% - 24px);max-width:1000px;margin:12px auto}
+.accountStatus{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+.accountStatus .pill{font-weight:800}
+.accountForm{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.accountForm label{margin:4px 0 2px}
+.accountActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.accountActions button{flex:1 1 130px}
+.accountNotice{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#11100f;margin-top:10px;font-size:13px;color:var(--muted)}
+.accountNotice.error{border-color:#a84b37;color:#ffd2c8}
+.accountNotice.success{border-color:#557b50;color:#d7edcf}
+
 </style>
 </head>
 <body>
@@ -125,6 +138,44 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <div class="brandTitle">IN SIGHT OUTDOORS</div>
 <div class="tag" id="brandTagline">HILL COUNTRY · NEVER A GOOD WIND</div>
 </header>
+
+<section class="panel accountPanel" id="accountPanel" aria-labelledby="accountHeading">
+  <h2 id="accountHeading">Your In Sight account <span class="pill" id="accountTier">Not signed in</span></h2>
+  <div id="accountSignedOut">
+    <p class="muted">Create your account or sign in to start your In Sight Outdoors Pro trial. Email verification is required.</p>
+    <div class="accountForm">
+      <div>
+        <label for="accountName">Display name (for new accounts)</label>
+        <input id="accountName" autocomplete="name" placeholder="Your name">
+      </div>
+      <div>
+        <label for="accountEmail">Email address</label>
+        <input id="accountEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+      </div>
+      <div>
+        <label for="accountPassword">Password</label>
+        <input id="accountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+      </div>
+    </div>
+    <div class="accountActions">
+      <button class="primary" id="accountSignUp">Create account</button>
+      <button id="accountSignIn">Sign in</button>
+      <button id="accountForgot">Forgot password?</button>
+    </div>
+  </div>
+  <div id="accountSignedIn" hidden>
+    <div class="accountStatus">
+      <span class="pill" id="accountTierDetail">Membership loading…</span>
+      <span class="small" id="accountTrialDates"></span>
+    </div>
+    <div class="muted" id="accountEmailDisplay"></div>
+    <div class="accountActions">
+      <button id="accountSignOut">Sign out</button>
+    </div>
+  </div>
+  <div id="accountNotice" class="accountNotice" role="status" aria-live="polite">Account services connect securely to Supabase. Your hunting data remains on this device for now.</div>
+</section>
+
 <main>
 <section class="panel mapPanel">
 <h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
@@ -267,8 +318,9 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>In Sight Outdoors · v0.7 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v0.9.0 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (()=>{
@@ -406,11 +458,150 @@ $('editPhoto').onchange=e=>{const f=e.target.files[0],s=stands.find(x=>x.id===se
 $('fieldPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('fieldPreview').src=r.result;$('fieldPreview').style.display='block'};r.readAsDataURL(f)};
 $('copyFieldPrompt').onclick=()=>{const q=$('fieldQuestion').value||'Identify the visible wildlife sign, plant, tree or track. Explain confidence and alternatives.';const p='Please identify this hunting field photo. '+q+' Describe visible evidence, likely species, confidence, and what additional photo or scale would help. Do not overstate certainty.';if(navigator.clipboard?.writeText)navigator.clipboard.writeText(p).then(()=>toast('Prompt copied')).catch(()=>toast('Clipboard unavailable'));else toast('Clipboard unavailable in this browser')};
 $('backupReminder').onclick=()=>toast('Export a backup before clearing browser data or changing devices');
+
+// v0.9.0: Supabase email accounts and membership display.
+// The publishable key is designed for browser use; never place a service_role key here.
+const SUPABASE_URL='https://ucczvmziiqfmsutckcja.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HRjnfXJq9BqWQJpLXKR4jw_dCdHPSqd';
+let authClient=null, currentAuthUser=null;
+function accountNotice(message,kind=''){
+  const el=$('accountNotice'); if(!el)return;
+  el.textContent=message; el.className='accountNotice'+(kind?' '+kind:'');
+}
+function accountRedirectUrl(){return window.location.origin+window.location.pathname}
+function showSignedIn(user){
+  currentAuthUser=user||null;
+  $('accountSignedOut').hidden=!!user;
+  $('accountSignedIn').hidden=!user;
+  $('accountTier').textContent=user?'Account active':'Not signed in';
+  $('accountEmailDisplay').textContent=user?.email||'';
+}
+function formatAccountDate(value){
+  if(!value)return '';
+  return new Date(value).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'});
+}
+async function refreshMembership(){
+  if(!authClient||!currentAuthUser)return;
+  $('accountTierDetail').textContent='Checking membership…';
+  try{
+    const {data,error}=await authClient.rpc('get_my_membership');
+    if(error)throw error;
+    const m=Array.isArray(data)?data[0]:data;
+    if(!m){
+      $('accountTierDetail').textContent='Membership pending';
+      $('accountTrialDates').textContent='Your membership record is being prepared.';
+      return;
+    }
+    const tier=m.effective_tier||m.access_tier||'free';
+    const names={trial:'30-day Pro trial',free:'Free',pro_monthly:'Pro monthly',pro_yearly:'Pro yearly',tester:'Field tester',admin:'Administrator'};
+    $('accountTierDetail').textContent=names[tier]||tier;
+    $('accountTrialDates').textContent=tier==='trial'
+      ? 'Trial ends '+formatAccountDate(m.trial_ends_at)
+      : (m.trial_ends_at?'Trial ended '+formatAccountDate(m.trial_ends_at):'');
+    accountNotice(tier==='trial'
+      ? 'Your Pro trial is active. Pro tools will be enabled as their secure backend services are added.'
+      : 'Your account is connected. Your current membership is '+(names[tier]||tier)+'.','success');
+  }catch(err){
+    $('accountTierDetail').textContent='Membership unavailable';
+    $('accountTrialDates').textContent='';
+    accountNotice('Signed in, but membership could not be loaded. Check that the database permissions setup is complete. '+(err.message||''),'error');
+  }
+}
+async function handleAuthSession(session){
+  const user=session?.user||null;
+  showSignedIn(user);
+  if(!user)return;
+  // The SQL function starts the one-time 30-day clock only after email verification.
+  if(user.email_confirmed_at){
+    try{
+      const {error}=await authClient.rpc('activate_my_trial');
+      if(error)throw error;
+    }catch(err){
+      accountNotice('Signed in, but trial activation needs attention: '+(err.message||''),'error');
+    }
+  }else{
+    accountNotice('Please verify your email using the link we sent. Your 30-day trial has not started yet.');
+  }
+  await refreshMembership();
+}
+async function initAccount(){
+  if(!window.supabase?.createClient){
+    accountNotice('Account service could not load. Check your internet connection and refresh.','error');return;
+  }
+  authClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
+  const {data:{session}}=await authClient.auth.getSession();
+  await handleAuthSession(session);
+  authClient.auth.onAuthStateChange((event,session)=>{
+    // Defer network calls outside the auth callback to avoid locking the auth client.
+    setTimeout(()=>handleAuthSession(session),0);
+    if(event==='PASSWORD_RECOVERY'){
+      accountNotice('Password recovery link accepted. Enter a new password in the password field and tap Update password.');
+      $('accountPassword').placeholder='Enter your new password';
+      $('accountSignedOut').hidden=false;
+      $('accountSignedIn').hidden=true;
+      $('accountSignUp').hidden=true;
+      $('accountSignIn').hidden=true;
+      $('accountForgot').hidden=true;
+      const b=document.createElement('button');b.id='accountUpdatePassword';b.className='primary';b.textContent='Update password';
+      $('accountSignedOut').querySelector('.accountActions').appendChild(b);
+      b.onclick=async()=>{
+        const password=$('accountPassword').value;
+        if(!password||password.length<8){accountNotice('Use a password with at least 8 characters.','error');return}
+        const {error}=await authClient.auth.updateUser({password});
+        if(error)accountNotice(error.message,'error');
+        else{accountNotice('Password updated successfully.','success');$('accountPassword').value='';b.remove();$('accountSignUp').hidden=false;$('accountSignIn').hidden=false;$('accountForgot').hidden=false}
+      };
+    }
+  });
+}
+$('accountSignUp').onclick=async()=>{
+  if(!authClient){accountNotice('Account service is still loading. Please wait a moment.');return}
+  const email=$('accountEmail').value.trim(),password=$('accountPassword').value,name=$('accountName').value.trim();
+  if(!email||!password){accountNotice('Enter your email and password first.','error');return}
+  if(password.length<8){accountNotice('Please use a password with at least 8 characters.','error');return}
+  $('accountSignUp').disabled=true;
+  try{
+    const {data,error}=await authClient.auth.signUp({email,password,options:{emailRedirectTo:accountRedirectUrl(),data:{display_name:name}}});
+    if(error)throw error;
+    if(data.session){await handleAuthSession(data.session)}
+    else accountNotice('Account created. Check your email and tap the verification link. Your 30-day trial starts after verification and first sign-in.','success');
+  }catch(err){accountNotice(err.message||'Could not create account.','error')}
+  finally{$('accountSignUp').disabled=false}
+};
+$('accountSignIn').onclick=async()=>{
+  if(!authClient){accountNotice('Account service is still loading.');return}
+  const email=$('accountEmail').value.trim(),password=$('accountPassword').value;
+  if(!email||!password){accountNotice('Enter your email and password first.','error');return}
+  $('accountSignIn').disabled=true;
+  try{
+    const {data,error}=await authClient.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    await handleAuthSession(data.session);
+  }catch(err){accountNotice(err.message||'Could not sign in.','error')}
+  finally{$('accountSignIn').disabled=false}
+};
+$('accountForgot').onclick=async()=>{
+  if(!authClient){accountNotice('Account service is still loading.');return}
+  const email=$('accountEmail').value.trim();
+  if(!email){accountNotice('Enter your email address first.','error');return}
+  const {error}=await authClient.auth.resetPasswordForEmail(email,{redirectTo:accountRedirectUrl()});
+  accountNotice(error?error.message:'If an account exists for that address, a password reset email has been sent.','success');
+};
+$('accountSignOut').onclick=async()=>{
+  if(!authClient)return;
+  const {error}=await authClient.auth.signOut();
+  if(error)accountNotice(error.message,'error');
+  else{showSignedIn(null);accountNotice('You are signed out.','success')}
+};
+
+initAccount();
 load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
 loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',renderBookmarks);$('bookmarkFilter').addEventListener('change',renderBookmarks);$('bookmarkSave').onclick=saveBookmark;$('bookmarkCancel').onclick=resetBookmarkForm;
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=078c-privacy-final').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=090-accounts').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 })();
 </script>
