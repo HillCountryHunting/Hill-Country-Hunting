@@ -1,10 +1,10 @@
 {
-  "name": "Hill Country Hunting",
-  "short_name": "Hill Country",
+  "name": "In Sight Outdoors",
+  "short_name": "In Sight",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#10251b",
   "theme_color": "#10251b",
-  "description": "Know the land. Hunt the wind."
+  "description": "Chittenango Falls \u00b7 Never a Good Wind"
 }

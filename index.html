@@ -11,7 +11,7 @@
 <style>
 :root{--bg:#10251b;--panel:#1a3326;--panel2:#203b2c;--gold:#d9bd78;--cream:#f2eee2;--muted:#aab8ad;--line:#3c5947;--red:#d87963;--green:#7bb58c}
 *{box-sizing:border-box}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23304b39' stroke-width='1' opacity='.55'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
-header{padding:18px 18px 14px;border-bottom:1px solid var(--line);background:#10251bf2;position:sticky;top:0;z-index:1000}
+header{padding:12px 14px 14px;border-bottom:1px solid var(--line);background:#10251bf2;position:sticky;top:0;z-index:1000;text-align:center}.brandLogo{display:block;width:min(100%,520px);height:auto;max-height:170px;object-fit:contain;margin:0 auto 5px;border-radius:10px}.brandTitle{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:18px}
 .brand{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:11px;letter-spacing:2px;color:var(--muted);margin-top:2px}
 main{max-width:1000px;margin:auto;padding:14px;display:grid;gap:14px}
 .panel{background:#1a3326ed;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #0002}
@@ -41,7 +41,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 </style>
 </head>
 <body>
-<header><div class="brand">HILL COUNTRY HUNTING</div><div class="tag">KNOW THE LAND. HUNT THE WIND.</div></header>
+<header class="brandHeader">
+<img class="brandLogo" src="./logo.png" alt="In Sight Outdoors — Never a Good Wind">
+<div class="brandTitle">IN SIGHT OUTDOORS</div>
+<div class="tag">CHITTENANGO FALLS · NEVER A GOOD WIND</div>
+</header>
 <main>
 <section class="panel mapPanel">
 <h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
@@ -54,6 +58,25 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 </div>
 <div class="legend"><span><i class="dot" style="background:#f1d18a"></i>Light wind</span><span><i class="dot" style="background:#8dc7a0"></i>Moderate</span><span><i class="dot" style="background:#e18b73"></i>Strong</span></div>
 <div class="hint">Tap the map to add a stand or waypoint. Animated flow shows the forecast wind direction over the map. It is a model-based estimate, not a live sensor or a terrain-resolved wind measurement.</div>
+</section>
+
+<section class="panel" id="trackerPanel">
+<h2>Woods tracker <span class="pill" id="trackStatus">Not tracking</span></h2>
+<p class="muted">Record your route into the woods and use the saved breadcrumb trail to retrace your way out.</p>
+<div class="row">
+<button class="primary" id="trackStart">▶ Start tracking</button>
+<button id="trackPause" disabled>Ⅱ Pause</button>
+<button id="trackFinish" disabled>■ Finish & save</button>
+</div>
+<div class="row" style="margin-top:10px">
+<div class="stand"><div class="small">DISTANCE WALKED</div><div class="standname" id="trackDistance">0.00 mi</div></div>
+<div class="stand"><div class="small">ELAPSED TIME</div><div class="standname" id="trackElapsed">00:00:00</div></div>
+</div>
+<div class="row" style="margin-top:10px">
+<button id="returnStart" disabled>⌖ Return to start</button>
+<button id="clearTrack" class="danger">Clear track</button>
+</div>
+<div class="hint" id="trackHint">GPS permission is required. Keep this app open while tracking; browser background tracking is not guaranteed.</div>
 </section>
 
 <section class="panel">
@@ -102,7 +125,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>Hill Country Hunting · v0.6 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v0.7 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -110,6 +133,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 'use strict';
 const STORE='hch_waypoints_v3', OLD='hch_waypoints_v2';
 let stands=[], selectedId=null, pendingPoint=null, windData=null, windOn=true, particles=[], animFrame=0, lastWindFetch=0, map, baseLayers={};
+let track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null}, trackWatch=null, trackLine=null, returnLine=null, startMarker=null, currentMarker=null, trackTick=null;
+const TRACK_STORE='iso_track_v1';
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2600)}
 function load(){try{let raw=localStorage.getItem(STORE);if(!raw){raw=localStorage.getItem(OLD);if(raw)localStorage.setItem(STORE,raw)}stands=raw?JSON.parse(raw):[];if(!Array.isArray(stands))stands=[]}catch(e){stands=[]}}
@@ -137,6 +162,36 @@ function resizeCanvas(){const c=$('windCanvas'),r=c.getBoundingClientRect(),d=wi
 function drawWind(){const canvas=$('windCanvas'),ctx=canvas.getContext('2d'),r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);if(!windOn||!windData)return;const rad=windData.to*Math.PI/180,spd=Math.max(1.1,Math.min(4.5,windData.speed/3.8));const color=windData.speed<8?'rgba(255,220,135,.95)':windData.speed<18?'rgba(133,220,165,.96)':'rgba(255,137,111,.96)';ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2.4;ctx.shadowColor=color;ctx.shadowBlur=5;particles.forEach(p=>{const x=p.x,y=p.y;p.x+=Math.sin(rad)*spd*2.2;p.y-=Math.cos(rad)*spd*2.2;p.age++;if(p.x<0||p.x>r.width||p.y<0||p.y>r.height||p.age>115){p.x=Math.random()*r.width;p.y=Math.random()*r.height;p.age=0}const len=20+(windData.speed>15?8:0),dx=Math.sin(rad)*len,dy=-Math.cos(rad)*len,x2=x+dx,y2=y+dy;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(dy,dx);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-7*Math.cos(a-.55),y2-7*Math.sin(a-.55));ctx.lineTo(x2-7*Math.cos(a+.55),y2-7*Math.sin(a+.55));ctx.closePath();ctx.fill()});ctx.shadowBlur=0;animFrame=requestAnimationFrame(drawWind)}
 function exportBackup(){const data=JSON.stringify({app:'Hill Country Hunting',version:'0.6',exported:new Date().toISOString(),stands:stands.map(({_marker,...s})=>s)},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download='hill-country-hunting-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(file){const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result),arr=Array.isArray(obj)?obj:obj.stands;if(!Array.isArray(arr))throw Error();arr.forEach(s=>{if(Number.isFinite(+s.lat)&&Number.isFinite(+s.lon)){s.id=s.id||uid();s.lat=+s.lat;s.lon=+s.lon}});stands=arr.filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon));persist();renderStands();toast('Backup imported')}catch(e){toast('That backup file could not be read')}};r.readAsText(file)}
+
+function saveTrack(){try{localStorage.setItem(TRACK_STORE,JSON.stringify(track))}catch(e){toast('Could not save track. Export your waypoint backup and free storage.')}}
+function loadTrack(){try{const t=JSON.parse(localStorage.getItem(TRACK_STORE)||'null');if(t&&Array.isArray(t.points))track=t}catch(e){}}
+function distanceM(a,b){const R=6371000,rad=x=>x*Math.PI/180,dLat=rad(b.lat-a.lat),dLon=rad(b.lon-a.lon),x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function trackDistance(){let m=0;for(let i=1;i<track.points.length;i++)m+=distanceM(track.points[i-1],track.points[i]);return m}
+function fmtElapsed(sec){sec=Math.max(0,Math.floor(sec));return [Math.floor(sec/3600),Math.floor(sec%3600/60),sec%60].map(n=>String(n).padStart(2,'0')).join(':')}
+function elapsedNow(){return track.elapsedBefore+(track.status==='recording'&&track.startedAt?(Date.now()-track.startedAt)/1000:0)}
+function drawTrack(){if(trackLine)map.removeLayer(trackLine);if(returnLine)map.removeLayer(returnLine);if(startMarker)map.removeLayer(startMarker);if(currentMarker)map.removeLayer(currentMarker);trackLine=null;returnLine=null;startMarker=null;currentMarker=null;
+ const pts=track.points.map(p=>[p.lat,p.lon]);if(pts.length>1)trackLine=L.polyline(pts,{color:'#ff6b2e',weight:5,opacity:.95}).addTo(map);
+ if(pts.length){startMarker=L.circleMarker(pts[0],{radius:8,color:'#fff',weight:2,fillColor:'#45a36a',fillOpacity:1}).addTo(map).bindTooltip('TRACK START');const last=pts[pts.length-1];currentMarker=L.circleMarker(last,{radius:7,color:'#fff',weight:2,fillColor:'#ff6b2e',fillOpacity:1}).addTo(map).bindTooltip('LAST GPS FIX');}
+}
+function renderTrack(){const meters=trackDistance();$('trackDistance').textContent=(meters/1609.344).toFixed(2)+' mi';$('trackElapsed').textContent=fmtElapsed(elapsedNow());$('trackStatus').textContent=track.status==='recording'?'Recording':track.status==='paused'?'Paused':track.status==='finished'?'Saved':'Not tracking';$('trackStart').disabled=track.status==='recording';$('trackPause').disabled=track.status!=='recording';$('trackPause').textContent=track.status==='paused'?'▶ Resume':'Ⅱ Pause';$('trackFinish').disabled=!(track.status==='recording'||track.status==='paused');$('returnStart').disabled=track.points.length<2;
+ $('trackHint').textContent=track.points.length?`${track.points.length} GPS points saved on this device. Orange line is your recorded path; green dot is where you started.`:'GPS permission is required. Keep this app open while tracking; browser background tracking is not guaranteed.';
+}
+function acceptFix(pos){const p={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,time:Date.now()};track.lastFix=p;
+ if(track.status==='recording'){const last=track.points[track.points.length-1];if(!last||distanceM(last,p)>=4){track.points.push(p);saveTrack();drawTrack()}}
+ if(!currentMarker){currentMarker=L.circleMarker([p.lat,p.lon],{radius:7,color:'#fff',weight:2,fillColor:'#2686ff',fillOpacity:1}).addTo(map).bindTooltip('Current location')}
+ else currentMarker.setLatLng([p.lat,p.lon]);
+ renderTrack();
+}
+function gpsError(e){toast(e.code===1?'Location permission denied. Allow location in Chrome.':'GPS signal unavailable. Move to a clearer area.')}
+function startGps(){if(!navigator.geolocation){toast('GPS is not available in this browser');return}if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=navigator.geolocation.watchPosition(acceptFix,gpsError,{enableHighAccuracy:true,maximumAge:1500,timeout:15000})}
+function startTrack(){if(!navigator.geolocation){toast('GPS is unavailable');return}if(track.status==='paused'){track.status='recording';track.startedAt=Date.now();saveTrack();startGps();renderTrack();return}
+ if(track.status==='finished'||track.status==='idle'){track={status:'recording',points:[],startedAt:Date.now(),elapsedBefore:0,lastFix:null};saveTrack();drawTrack();startGps();renderTrack();toast('Tracking started — watch your GPS signal')}
+}
+function pauseTrack(){if(track.status==='recording'){track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='paused';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack()}}
+function finishTrack(){if(track.status==='recording')track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='finished';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack();toast('Track saved on this device')}
+function returnToStart(){if(track.points.length<2)return;const start=track.points[0],last=track.points[track.points.length-1];if(returnLine)map.removeLayer(returnLine);returnLine=L.polyline([[last.lat,last.lon],[start.lat,start.lon]],{color:'#f3d58b',weight:4,dashArray:'8 9',opacity:.95}).addTo(map);map.fitBounds(trackLine?trackLine.getBounds():returnLine.getBounds(),{padding:[35,35]});const d=distanceM(last,start);toast(`Start is approximately ${(d/1609.344).toFixed(2)} miles from your last recorded point`)}
+function clearTrack(){if(track.status==='recording'){toast('Pause or finish tracking before clearing');return}if(!confirm('Clear the recorded breadcrumb track?'))return;track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null};saveTrack();drawTrack();renderTrack()}
+
 function initMap(){map=L.map('map',{zoomControl:true}).setView([43.05,-75.85],12);$('map').appendChild($('windCanvas'));baseLayers.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19});baseLayers.topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17});baseLayers.street=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});baseLayers.sat.addTo(map);map.on('click',e=>addStand(e.latlng.lat,e.latlng.lng));map.on('moveend',()=>{if(Date.now()-lastWindFetch>120000){lastWindFetch=Date.now();refreshOverlay()}});setTimeout(()=>{map.invalidateSize();resizeCanvas();refreshOverlay()},250);new ResizeObserver(()=>{resizeCanvas()}).observe($('mapWrap'))}
 $('savePending').onclick=savePending;$('gpsBtn').onclick=()=>{if(!navigator.geolocation){toast('GPS is not available in this browser');return}navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,16);$('gpsStatus').textContent='GPS active';L.circleMarker(ll,{radius:7,color:'#fff',fillColor:'#2686ff',fillOpacity:1}).addTo(map).bindTooltip('Your location')},e=>toast('Could not get GPS location. Check browser permissions.'),{enableHighAccuracy:true,timeout:12000})};
 $('layerSelect').onchange=e=>{Object.values(baseLayers).forEach(l=>map.removeLayer(l));baseLayers[e.target.value].addTo(map)};
@@ -147,7 +202,10 @@ $('editPhoto').onchange=e=>{const f=e.target.files[0],s=stands.find(x=>x.id===se
 $('fieldPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('fieldPreview').src=r.result;$('fieldPreview').style.display='block'};r.readAsDataURL(f)};
 $('copyFieldPrompt').onclick=()=>{const q=$('fieldQuestion').value||'Identify the visible wildlife sign, plant, tree or track. Explain confidence and alternatives.';const p='Please identify this hunting field photo. '+q+' Describe visible evidence, likely species, confidence, and what additional photo or scale would help. Do not overstate certainty.';if(navigator.clipboard?.writeText)navigator.clipboard.writeText(p).then(()=>toast('Prompt copied')).catch(()=>toast('Clipboard unavailable'));else toast('Clipboard unavailable in this browser')};
 $('backupReminder').onclick=()=>toast('Export a backup before clearing browser data or changing devices');
-load();initMap();renderStands();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
+$('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
+$('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 })();
 </script>
