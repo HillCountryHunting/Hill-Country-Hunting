@@ -107,6 +107,16 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
  #localWeatherPanel .hourlyStrip{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
 
+
+.bookmarkItem{background:#11100f;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px;min-width:0}
+.bookmarkItem .bookmarkName{font-weight:800;color:var(--cream);overflow-wrap:anywhere}
+.bookmarkItem .bookmarkUrl{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.bookmarkItem .bookmarkMeta{font-size:11px;color:var(--gold);margin-top:4px}
+.bookmarkItem .bookmarkActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.bookmarkItem .bookmarkActions button{padding:8px 11px;font-size:13px}
+#fieldResourcesPanel summary::-webkit-details-marker{color:var(--gold)}
+#fieldResourcesPanel input,#fieldResourcesPanel select,#fieldResourcesPanel textarea{max-width:100%;min-width:0}
+
 </style>
 </head>
 <body>
@@ -156,6 +166,40 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <button id="weatherRefresh">↻ Refresh</button>
 </div>
 <div class="hint">Weather forecast for your GPS location or map center. Conditions can vary locally in hill country. Data by <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:var(--gold)">Open-Meteo</a>.</div>
+</section>
+
+
+<section class="panel" id="fieldResourcesPanel">
+<h2>Field resources <span class="pill">Private to this device</span></h2>
+<p class="muted">Your personal hunting links, saved on this device. Other In Sight Outdoors users cannot see your bookmarks.</p>
+<div class="row">
+  <input id="bookmarkSearch" type="search" placeholder="Search my bookmarks…" aria-label="Search bookmarks">
+  <select id="bookmarkFilter" aria-label="Filter bookmarks">
+    <option value="All">All categories</option>
+    <option>Regulations</option><option>Maps & scouting</option><option>Weather</option>
+    <option>Gear & equipment</option><option>Wildlife</option><option>Other</option>
+  </select>
+</div>
+<div id="bookmarkList" style="margin-top:10px"></div>
+<details id="bookmarkEditor" style="margin-top:12px">
+  <summary style="cursor:pointer;color:var(--gold);font-weight:800;padding:10px 0">＋ Add a bookmark</summary>
+  <label for="bookmarkName">Website name</label>
+  <input id="bookmarkName" placeholder="e.g. NYS DEC Hunting Regulations">
+  <label for="bookmarkUrl">Website address</label>
+  <input id="bookmarkUrl" type="url" inputmode="url" placeholder="https://…" autocapitalize="off">
+  <label for="bookmarkCategory">Category</label>
+  <select id="bookmarkCategory">
+    <option>Regulations</option><option>Maps & scouting</option><option>Weather</option>
+    <option>Gear & equipment</option><option>Wildlife</option><option>Other</option>
+  </select>
+  <label for="bookmarkNotes">Notes (optional)</label>
+  <textarea id="bookmarkNotes" placeholder="Why you saved this link…"></textarea>
+  <div class="row" style="margin-top:10px">
+    <button class="primary" id="bookmarkSave">Save bookmark</button>
+    <button id="bookmarkCancel" type="button">Cancel</button>
+  </div>
+  <div class="hint">Only save websites you trust. Links open in a new browser tab.</div>
+</details>
 </section>
 
 <section class="panel" id="trackerPanel">
@@ -262,6 +306,44 @@ function drawWind(){const canvas=$('windCanvas'),ctx=canvas.getContext('2d'),r=c
 function exportBackup(){const data=JSON.stringify({app:'Hill Country Hunting',version:'0.6',exported:new Date().toISOString(),stands:stands.map(({_marker,...s})=>s)},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download='hill-country-hunting-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(file){const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result),arr=Array.isArray(obj)?obj:obj.stands;if(!Array.isArray(arr))throw Error();arr.forEach(s=>{if(Number.isFinite(+s.lat)&&Number.isFinite(+s.lon)){s.id=s.id||uid();s.lat=+s.lat;s.lon=+s.lon}});stands=arr.filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon));persist();renderStands();toast('Backup imported')}catch(e){toast('That backup file could not be read')}};r.readAsText(file)}
 
+
+// Personal Field Resources: stored only in this browser's localStorage.
+const BOOKMARK_STORE='iso_private_bookmarks_v1';
+let bookmarks=[], editingBookmarkId=null;
+function loadBookmarks(){try{const raw=localStorage.getItem(BOOKMARK_STORE);bookmarks=raw?JSON.parse(raw):[];if(!Array.isArray(bookmarks))bookmarks=[]}catch(e){bookmarks=[]}}
+function persistBookmarks(){try{localStorage.setItem(BOOKMARK_STORE,JSON.stringify(bookmarks))}catch(e){toast('Could not save bookmarks. Check available browser storage.')}}
+function safeUrl(value){try{const u=new URL(value.trim());return ['http:','https:'].includes(u.protocol)?u.href:null}catch(e){return null}}
+function resetBookmarkForm(){editingBookmarkId=null;$('bookmarkName').value='';$('bookmarkUrl').value='';$('bookmarkCategory').value='Regulations';$('bookmarkNotes').value='';$('bookmarkSave').textContent='Save bookmark';$('bookmarkEditor').open=false}
+function renderBookmarks(){
+ const q=$('bookmarkSearch').value.trim().toLowerCase(),cat=$('bookmarkFilter').value,root=$('bookmarkList');
+ root.innerHTML='';
+ const list=bookmarks.filter(b=>(cat==='All'||b.category===cat)&&(!q||[b.name,b.url,b.category,b.notes].join(' ').toLowerCase().includes(q)));
+ if(!list.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=bookmarks.length?'No bookmarks match that search.':'No bookmarks saved yet. Add your favorite hunting websites here.';root.appendChild(empty);return}
+ list.forEach(b=>{
+  const card=document.createElement('div');card.className='bookmarkItem';
+  const top=document.createElement('div');top.className='row';
+  const info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
+  const name=document.createElement('div');name.className='bookmarkName';name.textContent=b.name;
+  const url=document.createElement('div');url.className='bookmarkUrl';url.textContent=b.url;
+  const meta=document.createElement('div');meta.className='bookmarkMeta';meta.textContent=b.category+(b.notes?' · '+b.notes:'');
+  info.append(name,url,meta);top.appendChild(info);card.appendChild(top);
+  const actions=document.createElement('div');actions.className='bookmarkActions';
+  const open=document.createElement('button');open.className='primary';open.textContent='↗ Open website';open.onclick=()=>window.open(b.url,'_blank','noopener,noreferrer');
+  const edit=document.createElement('button');edit.textContent='Edit';edit.onclick=()=>editBookmark(b.id);
+  const del=document.createElement('button');del.className='danger';del.textContent='Delete';del.onclick=()=>{if(confirm('Delete bookmark “'+b.name+'”?')){bookmarks=bookmarks.filter(x=>x.id!==b.id);persistBookmarks();renderBookmarks();if(editingBookmarkId===b.id)resetBookmarkForm()}};
+  actions.append(open,edit,del);card.appendChild(actions);root.appendChild(card);
+ });
+}
+function editBookmark(id){const b=bookmarks.find(x=>x.id===id);if(!b)return;editingBookmarkId=id;$('bookmarkName').value=b.name;$('bookmarkUrl').value=b.url;$('bookmarkCategory').value=b.category;$('bookmarkNotes').value=b.notes||'';$('bookmarkSave').textContent='Update bookmark';$('bookmarkEditor').open=true;$('bookmarkEditor').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function saveBookmark(){
+ const name=$('bookmarkName').value.trim(),url=safeUrl($('bookmarkUrl').value),category=$('bookmarkCategory').value,notes=$('bookmarkNotes').value.trim();
+ if(!name){toast('Enter a name for this bookmark');return}
+ if(!url){toast('Enter a valid website address beginning with https://');return}
+ if(editingBookmarkId){const b=bookmarks.find(x=>x.id===editingBookmarkId);if(b)Object.assign(b,{name,url,category,notes})}
+ else bookmarks.unshift({id:'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,url,category,notes,created:Date.now()});
+ persistBookmarks();renderBookmarks();resetBookmarkForm();toast('Bookmark saved privately on this device');
+}
+
 function saveTrack(){try{localStorage.setItem(TRACK_STORE,JSON.stringify(track))}catch(e){toast('Could not save track. Export your waypoint backup and free storage.')}}
 function loadTrack(){try{const t=JSON.parse(localStorage.getItem(TRACK_STORE)||'null');if(t&&Array.isArray(t.points))track=t}catch(e){}}
 function distanceM(a,b){const R=6371000,rad=x=>x*Math.PI/180,dLat=rad(b.lat-a.lat),dLon=rad(b.lon-a.lon),x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -325,6 +407,7 @@ $('fieldPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new 
 $('copyFieldPrompt').onclick=()=>{const q=$('fieldQuestion').value||'Identify the visible wildlife sign, plant, tree or track. Explain confidence and alternatives.';const p='Please identify this hunting field photo. '+q+' Describe visible evidence, likely species, confidence, and what additional photo or scale would help. Do not overstate certainty.';if(navigator.clipboard?.writeText)navigator.clipboard.writeText(p).then(()=>toast('Prompt copied')).catch(()=>toast('Clipboard unavailable'));else toast('Clipboard unavailable in this browser')};
 $('backupReminder').onclick=()=>toast('Export a backup before clearing browser data or changing devices');
 load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
+loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',renderBookmarks);$('bookmarkFilter').addEventListener('change',renderBookmarks);$('bookmarkSave').onclick=saveBookmark;$('bookmarkCancel').onclick=resetBookmarkForm;
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
 trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=078c-privacy-final').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
