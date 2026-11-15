@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10251b">
+<meta name="theme-color" content="#11100f">
 <meta name="description" content="Hill Country Hunting — Know the land. Hunt the wind.">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48.png">
@@ -11,25 +11,25 @@
 <title>Hill Country Hunting</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{--bg:#10251b;--panel:#1a3326;--panel2:#203b2c;--gold:#d9bd78;--cream:#f2eee2;--muted:#aab8ad;--line:#3c5947;--red:#d87963;--green:#7bb58c}
-*{box-sizing:border-box;min-width:0}html,body{width:100%;max-width:100%;overflow-x:hidden}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23304b39' stroke-width='1' opacity='.55'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
-header{padding:12px 14px 14px;border-bottom:1px solid var(--line);background:#10251bf2;position:relative;text-align:center}.brandLogo{display:block;width:min(100%,520px);height:auto;max-height:170px;object-fit:contain;margin:0 auto 5px;border-radius:10px}.brandTitle{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:18px}
+:root{--bg:#090909;--panel:#171513;--panel2:#24201c;--gold:#ff5a1f;--cream:#f2dfbd;--muted:#b7aa98;--line:#514236;--red:#ff704d;--green:#d6a56d}
+*{box-sizing:border-box;min-width:0}html,body{width:100%;max-width:100%;overflow-x:hidden}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23402b20' stroke-width='1' opacity='.48'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
+header{padding:12px 14px 14px;border-bottom:1px solid var(--line);background:#090909f5;position:relative;text-align:center}.brandLogo{display:block;width:min(100%,520px);height:auto;max-height:170px;object-fit:contain;margin:0 auto 5px;border-radius:10px}.brandTitle{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:18px}
 .brand{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:11px;letter-spacing:2px;color:var(--muted);margin-top:2px}
 main{width:100%;max-width:1000px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;overflow-x:clip}
-.panel{background:#1a3326ed;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #0002}
+.panel{background:#171513f2;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #0002}
 h2{font-size:15px;letter-spacing:2px;color:var(--gold);margin:0 0 13px;text-transform:uppercase}
-#map{height:min(62vh,560px);min-height:330px;border-radius:16px;overflow:hidden;border:1px solid #536b59}
+#map{height:min(62vh,560px);min-height:330px;border-radius:16px;overflow:hidden;border:1px solid #66503f}
 .maptools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-button,select,input,textarea{font:inherit;color:var(--cream);background:#10251b;border:1px solid #526b59;border-radius:12px;padding:11px}
-button{font-weight:700;cursor:pointer;background:#263f30}button.primary{background:#d9bd78;color:#14251b;border-color:#d9bd78}button.active{outline:2px solid var(--gold)}button.danger{color:#ffd2c8;border-color:#895448}
+button,select,input,textarea{font:inherit;color:var(--cream);background:#11100f;border:1px solid #66503f;border-radius:12px;padding:11px}
+button{font-weight:700;cursor:pointer;background:#2b211b}button.primary{background:#ff5a1f;color:#120b08;border-color:#ff5a1f}button.active{outline:2px solid var(--gold)}button.danger{color:#ffd2c8;border-color:#9a4a32}
 input,select,textarea{width:100%;min-width:0}textarea{min-height:84px;resize:vertical}
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
 .small{font-size:13px;color:var(--muted)}.muted{color:var(--muted)}.hint{color:var(--muted);font-size:13px;margin:9px 2px}
 .pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 9px;font-size:12px;color:var(--gold)}
-.stand{background:#10251b;border:1px solid var(--line);border-radius:15px;padding:13px;margin-top:10px}
+.stand{background:#11100f;border:1px solid var(--line);border-radius:15px;padding:13px;margin-top:10px}
 .standtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.standname{font-weight:800;font-size:18px}
 .windline{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;color:var(--gold)}
-.windarrow{width:48px;height:48px;border-radius:50%;background:#304936;border:1px solid #b99d60;display:grid;place-items:center;flex:none}
+.windarrow{width:48px;height:48px;border-radius:50%;background:#3a271d;border:1px solid #b99d60;display:grid;place-items:center;flex:none}
 .windarrow span{display:block;font-size:34px;line-height:1;transform:rotate(0deg);transition:transform .5s}
 label{display:block;color:var(--gold);font-size:12px;letter-spacing:1px;margin:10px 0 5px}
 #windCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:650}
@@ -42,14 +42,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 @media(min-width:800px){main{grid-template-columns:1.15fr .85fr;align-items:start} .mapPanel{grid-column:1/-1}#map{height:560px}}
 
 .weatherGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px;min-width:0}
-.weatherMetric{background:#10251b;border:1px solid var(--line);border-radius:13px;padding:11px}
+.weatherMetric{background:#11100f;border:1px solid var(--line);border-radius:13px;padding:11px}
 .weatherMetric .value{font-size:21px;font-weight:800;color:var(--cream)}
 .weatherMetric .caption{font-size:11px;color:var(--muted);letter-spacing:1px}
-.weatherHero{display:flex;align-items:center;gap:12px;min-width:0;max-width:100%;background:#10251b;border:1px solid var(--line);border-radius:15px;padding:14px}.weatherHero>div{min-width:0;overflow-wrap:anywhere}
+.weatherHero{display:flex;align-items:center;gap:12px;min-width:0;max-width:100%;background:#11100f;border:1px solid var(--line);border-radius:15px;padding:14px}.weatherHero>div{min-width:0;overflow-wrap:anywhere}
 .weatherIcon{font-size:42px;line-height:1}
 .weatherTemp{font-size:38px;font-weight:900;line-height:1.1;color:var(--gold)}
 .hourlyStrip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 0 3px;min-width:0}
-.hourItem{min-width:0;width:100%;text-align:center;background:#10251b;border:1px solid var(--line);border-radius:12px;padding:9px 5px;font-size:12px;overflow-wrap:anywhere}
+.hourItem{min-width:0;width:100%;text-align:center;background:#11100f;border:1px solid var(--line);border-radius:12px;padding:9px 5px;font-size:12px;overflow-wrap:anywhere}
 .hourItem strong{display:block;font-size:17px;color:var(--gold)}
 @media(min-width:800px){.weatherGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.hourlyStrip{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
@@ -241,7 +241,7 @@ function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).sli
 function deg(d){return ((d%360)+360)%360}
 function compass(d){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg(d)/45)%8]}
 function mph(kmh){return (kmh*.621371).toFixed(1)}
-function markerFor(s){const m=L.circleMarker([s.lat,s.lon],{radius:8,color:'#e4c77c',weight:2,fillColor:'#d9bd78',fillOpacity:1}).addTo(map);m.bindTooltip(s.name||s.type);m.on('click',()=>selectStand(s.id));s._marker=m}
+function markerFor(s){const m=L.circleMarker([s.lat,s.lon],{radius:8,color:'#f2dfbd',weight:2,fillColor:'#ff5a1f',fillOpacity:1}).addTo(map);m.bindTooltip(s.name||s.type);m.on('click',()=>selectStand(s.id));s._marker=m}
 function addStand(lat,lon){pendingPoint={lat,lon};$('standName').focus();toast('Name your new map pin, then tap Save map pin')}
 function savePending(){if(!pendingPoint){toast('Tap the map first to place a pin');return}const s={id:uid(),name:$('standName').value.trim()||$('standType').value,type:$('standType').value,lat:pendingPoint.lat,lon:pendingPoint.lon,notes:'',access:'',created:Date.now()};stands.push(s);persist();pendingPoint=null;$('standName').value='';renderStands();selectStand(s.id);toast('Waypoint saved')}
 function renderStands(){stands.forEach(s=>{if(s._marker)map.removeLayer(s._marker);markerFor(s)});$('standList').innerHTML='';if(!stands.length){$('standList').innerHTML='<p class="muted">No saved waypoints yet. Tap the map to add your first stand.</p>';return}
@@ -257,7 +257,7 @@ async function refreshAll(){toast('Refreshing map wind…');await refreshOverlay
 async function refreshOverlay(){if(!map)return;const c=map.getCenter();try{const j=await fetchWind(c.lat,c.lng);const w=j.current;windData={speed:Number(w.wind_speed_10m||0),to:deg(Number(w.wind_direction_10m||0)+180)};initParticles();drawWind()}catch(e){if(!windData)toast('Map wind overlay needs an internet connection')}}
 function initParticles(){const canvas=$('windCanvas'),rect=canvas.getBoundingClientRect();particles=Array.from({length:Math.max(100,Math.floor(rect.width*rect.height/3200))},()=>({x:Math.random()*rect.width,y:Math.random()*rect.height,age:Math.random()*100}))}
 function resizeCanvas(){const c=$('windCanvas'),r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);initParticles()}
-function drawWind(){const canvas=$('windCanvas'),ctx=canvas.getContext('2d'),r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);if(!windOn||!windData)return;const rad=windData.to*Math.PI/180,spd=Math.max(1.1,Math.min(4.5,windData.speed/3.8));const color=windData.speed<8?'rgba(255,220,135,.95)':windData.speed<18?'rgba(133,220,165,.96)':'rgba(255,137,111,.96)';ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2.4;ctx.shadowColor=color;ctx.shadowBlur=5;particles.forEach(p=>{const x=p.x,y=p.y;p.x+=Math.sin(rad)*spd*2.2;p.y-=Math.cos(rad)*spd*2.2;p.age++;if(p.x<0||p.x>r.width||p.y<0||p.y>r.height||p.age>115){p.x=Math.random()*r.width;p.y=Math.random()*r.height;p.age=0}const len=20+(windData.speed>15?8:0),dx=Math.sin(rad)*len,dy=-Math.cos(rad)*len,x2=x+dx,y2=y+dy;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(dy,dx);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-7*Math.cos(a-.55),y2-7*Math.sin(a-.55));ctx.lineTo(x2-7*Math.cos(a+.55),y2-7*Math.sin(a+.55));ctx.closePath();ctx.fill()});ctx.shadowBlur=0;animFrame=requestAnimationFrame(drawWind)}
+function drawWind(){const canvas=$('windCanvas'),ctx=canvas.getContext('2d'),r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);if(!windOn||!windData)return;const rad=windData.to*Math.PI/180,spd=Math.max(1.1,Math.min(4.5,windData.speed/3.8));const color=windData.speed<8?'rgba(255,112,57,.98)':windData.speed<18?'rgba(255,173,112,.98)':'rgba(255,80,38,.98)';ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2.4;ctx.shadowColor=color;ctx.shadowBlur=5;particles.forEach(p=>{const x=p.x,y=p.y;p.x+=Math.sin(rad)*spd*2.2;p.y-=Math.cos(rad)*spd*2.2;p.age++;if(p.x<0||p.x>r.width||p.y<0||p.y>r.height||p.age>115){p.x=Math.random()*r.width;p.y=Math.random()*r.height;p.age=0}const len=20+(windData.speed>15?8:0),dx=Math.sin(rad)*len,dy=-Math.cos(rad)*len,x2=x+dx,y2=y+dy;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(dy,dx);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-7*Math.cos(a-.55),y2-7*Math.sin(a-.55));ctx.lineTo(x2-7*Math.cos(a+.55),y2-7*Math.sin(a+.55));ctx.closePath();ctx.fill()});ctx.shadowBlur=0;animFrame=requestAnimationFrame(drawWind)}
 function exportBackup(){const data=JSON.stringify({app:'Hill Country Hunting',version:'0.6',exported:new Date().toISOString(),stands:stands.map(({_marker,...s})=>s)},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download='hill-country-hunting-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(file){const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result),arr=Array.isArray(obj)?obj:obj.stands;if(!Array.isArray(arr))throw Error();arr.forEach(s=>{if(Number.isFinite(+s.lat)&&Number.isFinite(+s.lon)){s.id=s.id||uid();s.lat=+s.lat;s.lon=+s.lon}});stands=arr.filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon));persist();renderStands();toast('Backup imported')}catch(e){toast('That backup file could not be read')}};r.readAsText(file)}
 
@@ -268,8 +268,8 @@ function trackDistance(){let m=0;for(let i=1;i<track.points.length;i++)m+=distan
 function fmtElapsed(sec){sec=Math.max(0,Math.floor(sec));return [Math.floor(sec/3600),Math.floor(sec%3600/60),sec%60].map(n=>String(n).padStart(2,'0')).join(':')}
 function elapsedNow(){return track.elapsedBefore+(track.status==='recording'&&track.startedAt?(Date.now()-track.startedAt)/1000:0)}
 function drawTrack(){if(trackLine)map.removeLayer(trackLine);if(returnLine)map.removeLayer(returnLine);if(startMarker)map.removeLayer(startMarker);if(currentMarker)map.removeLayer(currentMarker);trackLine=null;returnLine=null;startMarker=null;currentMarker=null;
- const pts=track.points.map(p=>[p.lat,p.lon]);if(pts.length>1)trackLine=L.polyline(pts,{color:'#ff6b2e',weight:5,opacity:.95}).addTo(map);
- if(pts.length){startMarker=L.circleMarker(pts[0],{radius:8,color:'#fff',weight:2,fillColor:'#45a36a',fillOpacity:1}).addTo(map).bindTooltip('TRACK START');const last=pts[pts.length-1];currentMarker=L.circleMarker(last,{radius:7,color:'#fff',weight:2,fillColor:'#ff6b2e',fillOpacity:1}).addTo(map).bindTooltip('LAST GPS FIX');}
+ const pts=track.points.map(p=>[p.lat,p.lon]);if(pts.length>1)trackLine=L.polyline(pts,{color:'#ff5a1f',weight:5,opacity:.95}).addTo(map);
+ if(pts.length){startMarker=L.circleMarker(pts[0],{radius:8,color:'#fff',weight:2,fillColor:'#ff5a1f',fillOpacity:1}).addTo(map).bindTooltip('TRACK START');const last=pts[pts.length-1];currentMarker=L.circleMarker(last,{radius:7,color:'#fff',weight:2,fillColor:'#ff5a1f',fillOpacity:1}).addTo(map).bindTooltip('LAST GPS FIX');}
 }
 function renderTrack(){const meters=trackDistance();$('trackDistance').textContent=(meters/1609.344).toFixed(2)+' mi';$('trackElapsed').textContent=fmtElapsed(elapsedNow());$('trackStatus').textContent=track.status==='recording'?'Recording':track.status==='paused'?'Paused':track.status==='finished'?'Saved':'Not tracking';$('trackStart').disabled=track.status==='recording';$('trackPause').disabled=track.status!=='recording';$('trackPause').textContent=track.status==='paused'?'▶ Resume':'Ⅱ Pause';$('trackFinish').disabled=!(track.status==='recording'||track.status==='paused');$('returnStart').disabled=track.points.length<2;
  $('trackHint').textContent=track.points.length?`${track.points.length} GPS points saved on this device. Orange line is your recorded path; green dot is where you started.`:'GPS permission is required. Keep this app open while tracking; browser background tracking is not guaranteed.';
@@ -287,7 +287,7 @@ function startTrack(){if(!navigator.geolocation){toast('GPS is unavailable');ret
 }
 function pauseTrack(){if(track.status==='recording'){track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='paused';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack()}}
 function finishTrack(){if(track.status==='recording')track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='finished';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack();toast('Track saved on this device')}
-function returnToStart(){if(track.points.length<2)return;const start=track.points[0],last=track.points[track.points.length-1];if(returnLine)map.removeLayer(returnLine);returnLine=L.polyline([[last.lat,last.lon],[start.lat,start.lon]],{color:'#f3d58b',weight:4,dashArray:'8 9',opacity:.95}).addTo(map);map.fitBounds(trackLine?trackLine.getBounds():returnLine.getBounds(),{padding:[35,35]});const d=distanceM(last,start);toast(`Start is approximately ${(d/1609.344).toFixed(2)} miles from your last recorded point`)}
+function returnToStart(){if(track.points.length<2)return;const start=track.points[0],last=track.points[track.points.length-1];if(returnLine)map.removeLayer(returnLine);returnLine=L.polyline([[last.lat,last.lon],[start.lat,start.lon]],{color:'#f2dfbd',weight:4,dashArray:'8 9',opacity:.95}).addTo(map);map.fitBounds(trackLine?trackLine.getBounds():returnLine.getBounds(),{padding:[35,35]});const d=distanceM(last,start);toast(`Start is approximately ${(d/1609.344).toFixed(2)} miles from your last recorded point`)}
 function clearTrack(){if(track.status==='recording'){toast('Pause or finish tracking before clearing');return}if(!confirm('Clear the recorded breadcrumb track?'))return;track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null};saveTrack();drawTrack();renderTrack()}
 
 
