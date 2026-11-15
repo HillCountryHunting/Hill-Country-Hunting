@@ -3,170 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14251d">
-<meta name="description" content="Hill Country Hunting field map, waypoints and wind conditions.">
-<title>Hill Country Hunting</title>
+<meta name="theme-color" content="#10251b">
+<meta name="description" content="Hill Country Hunting — Know the land. Hunt the wind.">
 <link rel="manifest" href="./manifest.webmanifest">
+<title>Hill Country Hunting</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{--forest:#14251d;--gold:#c5a66a;--cream:#f2f0e8;--muted:#aab7ac;--line:#34483a}
-*{box-sizing:border-box}
-body{margin:0;background-color:var(--forest);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='360' viewBox='0 0 420 360'%3E%3Cg fill='none' stroke='%23869a79' stroke-opacity='.13' stroke-width='1.15'%3E%3Cpath d='M-30 65 C35 5 95 8 130 48 S220 105 270 48 370 5 450 48 M-35 82 C35 22 92 28 125 65 S220 125 280 66 375 23 450 67 M-30 105 C30 52 85 52 120 85 S220 148 290 88 380 48 450 92 M-35 245 C25 185 95 190 135 225 S230 285 285 225 375 185 450 225 M-35 265 C25 205 95 210 135 245 S230 305 285 245 375 205 450 245'/%3E%3Cpath d='M65 -25 C15 35 18 95 60 130 S115 220 55 275 20 340 65 390 M85 -25 C35 35 38 95 80 130 S135 220 75 275 40 340 85 390 M345 -25 C295 35 298 95 340 130 S395 220 335 275 300 340 345 390'/%3E%3C/g%3E%3C/svg%3E");background-attachment:fixed;color:var(--cream);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{padding:15px 17px;background:linear-gradient(135deg,#172c21,#0d1913);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px}
-.logo{width:42px;height:42px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-size:21px}
-.brand h1{font-size:16px;letter-spacing:1.25px;margin:0;font-weight:850}.brand p{font-size:9px;color:var(--muted);letter-spacing:1.8px;margin:3px 0 0}
-.status{margin-left:auto;font-size:10px;color:var(--muted);text-align:right}.status b{display:block;color:#d7c28e}
-main{max-width:950px;margin:auto;padding:13px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-button,select,input{border:1px solid #536555;background:#263d2e;color:#f4f1e8;padding:10px 11px;border-radius:9px;font-size:13px}
-button{font-weight:700;cursor:pointer}button.primary{background:var(--gold);border-color:var(--gold);color:#17251b}
-input{background:#102017;min-width:0}input.name{flex:1}
-#map{height:48vh;min-height:320px;border:1px solid #536555;border-radius:13px;overflow:hidden;background:#25392d}
-.hint{font-size:11px;color:var(--muted);margin:8px 2px 13px}
-.grid{display:grid;grid-template-columns:1fr;gap:11px}
-.panel{background:rgba(28,48,36,.96);border:1px solid var(--line);border-radius:12px;padding:13px}
-.panel h2{font-size:12px;letter-spacing:1.4px;margin:0 0 10px;color:#dfc58e}
-.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-#waypoints{display:grid;gap:8px;margin-top:10px}
-.wp{background:#14251d;border:1px solid #34483a;border-radius:9px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center}
-.wp small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
-.windline{grid-column:1/-1;border-top:1px solid #34483a;padding-top:7px;display:flex;align-items:center;gap:8px;font-size:12px;color:#d8c38f}
-.wind-arrow{display:inline-grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#263d2e;border:1px solid #8e815e;flex:0 0 auto}
-.wind-arrow span{display:block;font-size:20px;line-height:1;transform:rotate(var(--angle,0deg));animation:windPulse 1.5s ease-in-out infinite}
-@keyframes windPulse{0%,100%{translate:0 0;opacity:.72}50%{translate:3px 0;opacity:1}}
-.smallnote{font-size:11px;color:var(--muted);line-height:1.5}
-#windSummary{color:#e0c78e;font-size:13px;line-height:1.6}
-.offline-pill{display:inline-block;padding:4px 7px;border-radius:20px;border:1px solid #62735f;font-size:10px;margin-top:5px}
-footer{text-align:center;padding:18px;color:#87978a;font-size:10px}
-.leaflet-control-attribution{font-size:9px!important}
-.leaflet-popup-content button{margin-top:6px}
-@media(min-width:720px){main{padding:19px}.grid{grid-template-columns:1fr 1fr}#map{height:58vh}}
+:root{--bg:#10251b;--panel:#1a3326;--panel2:#203b2c;--gold:#d9bd78;--cream:#f2eee2;--muted:#aab8ad;--line:#3c5947;--red:#d87963;--green:#7bb58c}
+*{box-sizing:border-box}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23304b39' stroke-width='1' opacity='.55'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
+header{padding:18px 18px 14px;border-bottom:1px solid var(--line);background:#10251bf2;position:sticky;top:0;z-index:1000}
+.brand{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:11px;letter-spacing:2px;color:var(--muted);margin-top:2px}
+main{max-width:1000px;margin:auto;padding:14px;display:grid;gap:14px}
+.panel{background:#1a3326ed;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #0002}
+h2{font-size:15px;letter-spacing:2px;color:var(--gold);margin:0 0 13px;text-transform:uppercase}
+#map{height:min(62vh,560px);min-height:330px;border-radius:16px;overflow:hidden;border:1px solid #536b59}
+.maptools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+button,select,input,textarea{font:inherit;color:var(--cream);background:#10251b;border:1px solid #526b59;border-radius:12px;padding:11px}
+button{font-weight:700;cursor:pointer;background:#263f30}button.primary{background:#d9bd78;color:#14251b;border-color:#d9bd78}button.active{outline:2px solid var(--gold)}button.danger{color:#ffd2c8;border-color:#895448}
+input,select,textarea{width:100%;min-width:0}textarea{min-height:84px;resize:vertical}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.small{font-size:13px;color:var(--muted)}.muted{color:var(--muted)}.hint{color:var(--muted);font-size:13px;margin:9px 2px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 9px;font-size:12px;color:var(--gold)}
+.stand{background:#10251b;border:1px solid var(--line);border-radius:15px;padding:13px;margin-top:10px}
+.standtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.standname{font-weight:800;font-size:18px}
+.windline{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;color:var(--gold)}
+.windarrow{width:48px;height:48px;border-radius:50%;background:#304936;border:1px solid #b99d60;display:grid;place-items:center;flex:none}
+.windarrow span{display:block;font-size:34px;line-height:1;transform:rotate(0deg);transition:transform .5s}
+label{display:block;color:var(--gold);font-size:12px;letter-spacing:1px;margin:10px 0 5px}
+#windCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:450}
+.mapwrap{position:relative}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#e3c77e;color:#17281d;padding:10px 16px;border-radius:30px;font-weight:700;z-index:3000;display:none;max-width:90%;text-align:center}
+#photoPreview{max-width:100%;max-height:180px;border-radius:12px;display:none;margin-top:8px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px}
+@media(min-width:800px){main{grid-template-columns:1.15fr .85fr;align-items:start} .mapPanel{grid-column:1/-1}#map{height:560px}}
 </style>
 </head>
 <body>
-<header>
- <div class="logo">♜</div>
- <div class="brand"><h1>HILL COUNTRY HUNTING</h1><p>KNOW THE LAND. HUNT THE WIND.</p></div>
- <div class="status"><b id="gpsStatus">GPS OFF</b><span id="coordStatus">Waiting for location</span><br><span id="netStatus" class="offline-pill">Checking connection…</span></div>
-</header>
+<header><div class="brand">HILL COUNTRY HUNTING</div><div class="tag">KNOW THE LAND. HUNT THE WIND.</div></header>
 <main>
- <div class="toolbar">
-  <button class="primary" id="locateBtn">◎ Find my location</button>
-  <button id="addBtn">＋ Add stand here</button>
-  <select id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
- </div>
- <div id="map"></div>
- <div class="hint">Tap the map to add a waypoint. Wind arrows point in the direction the forecast wind is traveling.</div>
- <div class="grid">
-  <section class="panel">
-   <h2>YOUR HUNTING WAYPOINTS</h2>
-   <div class="row"><input class="name" id="wpName" placeholder="Stand name (e.g. North Ridge)"><select id="wpType"><option>Tree stand</option><option>Ground blind</option><option>Scrape</option><option>Rub</option><option>Trail</option><option>Bedding area</option><option>Camera</option><option>Access point</option><option>Other</option></select></div>
-   <div id="waypoints"><div class="smallnote">No waypoints saved yet. Tap the map to add one.</div></div>
-   <p class="smallnote">Waypoints are saved in this browser on this device. Use Export backup before clearing browser data.</p>
-   <button id="exportBtn">↓ Export waypoint backup</button>
-  </section>
-  <section class="panel">
-   <h2>LOCAL WIND CONDITIONS</h2>
-   <div id="windSummary">Find your location or add a waypoint to load its forecast.</div>
-   <p class="smallnote">Forecast wind is model-estimated at each waypoint, not a direct measurement inside the timber. Hills, valleys and thermals can change actual stand-level wind.</p>
-   <button id="refreshWindBtn">↻ Refresh all stand winds</button>
-  </section>
-  <section class="panel">
-   <h2>FIELD AI ASSISTANT</h2>
-   <p class="smallnote">Photo identification for scat, tracks, plants and trees is planned for a later connected release. This starter does not upload your photos or identify them yet.</p>
-   <input id="photoInput" type="file" accept="image/*" capture="environment">
-   <div id="photoPreview" class="smallnote"></div>
-  </section>
-  <section class="panel">
-   <h2>OFFLINE FIELD MODE</h2>
-   <p class="smallnote">The app shell and saved waypoints can work offline after a successful online visit and service-worker installation. Live weather and map imagery may still need internet unless map tiles have already been cached by the browser. This release does not yet provide a selectable downloadable map-area pack.</p>
-   <div id="offlineInfo" class="smallnote">Checking offline support…</div>
-  </section>
- </div>
+<section class="panel mapPanel">
+<h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
+<div class="mapwrap" id="mapWrap"><div id="map"></div><canvas id="windCanvas"></canvas></div>
+<div class="maptools">
+<button id="gpsBtn">◎ My location</button>
+<button id="windToggle" class="active">〰 Wind overlay ON</button>
+<select id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
+<button id="refreshWind">↻ Refresh wind</button>
+</div>
+<div class="legend"><span><i class="dot" style="background:#f1d18a"></i>Light wind</span><span><i class="dot" style="background:#8dc7a0"></i>Moderate</span><span><i class="dot" style="background:#e18b73"></i>Strong</span></div>
+<div class="hint">Tap the map to add a stand or waypoint. Animated flow shows the forecast wind direction over the map. It is a model-based estimate, not a live sensor or a terrain-resolved wind measurement.</div>
+</section>
+
+<section class="panel">
+<h2>Your hunting waypoints</h2>
+<label for="standName">Stand / waypoint name</label><input id="standName" placeholder="e.g. North Ridge">
+<div class="row"><select id="standType"><option>Tree stand</option><option>Saddle setup</option><option>Ground blind</option><option>Trail camera</option><option>Scrape</option><option>Food source</option><option>Access point</option><option>Other</option></select><button class="primary" id="savePending">Save map pin</button></div>
+<div id="standList"></div>
+<div class="row" style="margin-top:12px"><button id="exportBtn">↓ Export backup</button><button id="importBtn">↑ Import backup</button><input type="file" id="importFile" accept=".json,application/json" hidden></div>
+<div class="hint">Stands, notes and attached photos are stored in this browser on this device. Export backups before clearing browser data.</div>
+</section>
+
+<section class="panel">
+<h2>Stand details & field notes</h2>
+<div id="editorEmpty" class="muted">Tap a stand on the map or select one below to edit its details.</div>
+<div id="editor" hidden>
+<div class="pill" id="editCoords"></div>
+<label for="editName">Name</label><input id="editName">
+<label for="editNotes">Hunting notes</label><textarea id="editNotes" placeholder="Wind access, deer sightings, entry route, bedding cover..."></textarea>
+<label for="editAccess">Access route / approach</label><textarea id="editAccess" placeholder="Describe your quiet approach and exit route"></textarea>
+<label for="editPhoto">Stand / trail / area photo</label><input id="editPhoto" type="file" accept="image/*" capture="environment">
+<img id="photoPreview" alt="Attached stand photo">
+<div class="row"><button class="primary" id="saveDetails">Save stand details</button><button id="removePhoto">Remove photo</button></div>
+</div>
+</section>
+
+<section class="panel">
+<h2>Local wind conditions</h2>
+<div id="selectedWind" class="muted">Select a waypoint to see its forecast.</div>
+<div id="windHistory" class="small" style="margin-top:10px"></div>
+<div class="hint">Wind forecasts come from Open-Meteo at the selected stand coordinates. Hills, valleys, canopy and thermals can change actual stand-level wind.</div>
+</section>
+
+<section class="panel">
+<h2>Field photo assistant</h2>
+<p class="muted">Choose a photo of tracks, scat, a plant, tree or other field sign. The app can preview it and prepare it for AI identification; AI analysis is not connected in this version.</p>
+<input id="fieldPhoto" type="file" accept="image/*" capture="environment">
+<img id="fieldPreview" alt="Field photo preview" style="display:none;max-width:100%;max-height:220px;border-radius:12px;margin-top:10px">
+<textarea id="fieldQuestion" placeholder="What would you like help identifying? e.g. deer track, scat, plant..."></textarea>
+<button id="copyFieldPrompt">Copy identification prompt</button>
+</section>
+
+<section class="panel">
+<h2>Property boundaries & offline maps</h2>
+<p class="muted">Parcel boundary data is not connected yet. Boundary coverage and reuse rights vary by county, so this version does not draw guessed property lines.</p>
+<p class="muted">The app shell and recently viewed map tiles may be cached after an online visit. Full-area offline map downloads are not implemented yet; live weather and new satellite tiles still need internet.</p>
+<div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
+</section>
 </main>
-<footer>HILL COUNTRY HUNTING • FIELD VERSION 0.5<br>Property boundaries are not included. Map imagery and weather require their providers and may be unavailable offline.</footer>
+<footer>Hill Country Hunting · v0.6 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(function(){
+(()=>{
 'use strict';
+const STORE='hch_waypoints_v3', OLD='hch_waypoints_v2';
+let stands=[], selectedId=null, pendingPoint=null, windData=null, windOn=true, particles=[], animFrame=0, lastWindFetch=0, map, baseLayers={};
 const $=id=>document.getElementById(id);
-const STORE='hch_waypoints_v3';
-let current=null,markers=[],windCache={};
-let waypoints=[];
-try{waypoints=JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){waypoints=[]}
-const map=L.map('map',{zoomControl:true}).setView([43.0,-75.9],12);
-const layers={
- sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}),
- topo:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap contributors'}),
- street:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'})
-};
-layers.sat.addTo(map);
-$('layerSelect').onchange=e=>{Object.values(layers).forEach(l=>map.removeLayer(l));layers[e.target.value].addTo(map)};
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function persist(){localStorage.setItem(STORE,JSON.stringify(waypoints));render()}
-function icon(){return L.divIcon({className:'',html:'<div style="width:17px;height:17px;background:#d2b36e;border:3px solid #17251b;border-radius:50%;box-shadow:0 1px 7px #000"></div>',iconSize:[17,17],iconAnchor:[8,8]})}
-function render(){
- markers.forEach(m=>map.removeLayer(m));markers=[];
- waypoints.forEach((w,i)=>{
-  const wind=w.wind;
-  let windHtml=wind?`<div class="windline"><span class="wind-arrow"><span style="--angle:${wind.to}deg">➤</span></span><span>${Math.round(wind.speed)} mph · blowing toward ${wind.toName} (${wind.to}°)</span></div>`:'<div class="windline">Wind forecast not loaded</div>';
-  const marker=L.marker([w.lat,w.lon],{icon:icon()}).addTo(map).bindPopup(`<b>${esc(w.name)}</b><br>${esc(w.type)}<br>${wind?`Wind ${Math.round(wind.speed)} mph · toward ${wind.to}°`:'Wind not loaded'}<br><button onclick="window.hchRefreshOne(${i})">Refresh wind</button>`);
-  markers.push(marker);
- });
- $('waypoints').innerHTML=waypoints.length?waypoints.map((w,i)=>`<div class="wp"><div><b>${esc(w.name)}</b><small>${esc(w.type)} · ${w.lat.toFixed(5)}, ${w.lon.toFixed(5)}</small></div><button data-del="${i}">Delete</button>${w.wind?`<div class="windline"><span class="wind-arrow"><span style="--angle:${w.wind.to}deg">➤</span></span><span>${Math.round(w.wind.speed)} mph · blowing toward ${w.wind.toName} (${w.wind.to}°)</span></div>`:'<div class="windline">Wind forecast not loaded yet</div>'}</div>`).join(''):'<div class="smallnote">No waypoints saved yet. Tap the map to add one.</div>';
- document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{waypoints.splice(+b.dataset.del,1);persist()});
-}
-function compass(deg){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg/45)%8]}
-async function loadWind(lat,lon){
- const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph`;
- const res=await fetch(url);if(!res.ok)throw Error('Weather service unavailable');
- const d=await res.json(),c=d.current,from=Number(c.wind_direction_10m),to=(from+180)%360;
- return {speed:Number(c.wind_speed_10m),gust:Number(c.wind_gusts_10m||0),from,to,toName:compass(to),updated:c.time||new Date().toISOString()};
-}
-async function refreshOne(i){
- const w=waypoints[i];try{w.wind=await loadWind(w.lat,w.lon);persist();return w.wind}catch(e){return null}
-}
-window.hchRefreshOne=async i=>{await refreshOne(i);render()};
-async function refreshAll(){
- $('windSummary').textContent='Refreshing wind forecasts for your stands…';
- let ok=0;
- for(let i=0;i<waypoints.length;i++){if(await refreshOne(i))ok++}
- render();
- $('windSummary').textContent=waypoints.length?`${ok} of ${waypoints.length} stand wind forecasts updated. Arrows point downwind.`:'Add a waypoint to see stand-specific wind.';
-}
-function addWaypoint(lat,lon){
- const name=$('wpName').value.trim()||$('wpType').value;
- waypoints.push({name,type:$('wpType').value,lat,lon,wind:null});
- $('wpName').value='';persist();refreshOne(waypoints.length-1).then(render);
-}
-map.on('click',e=>addWaypoint(e.latlng.lat,e.latlng.lng));
-$('addBtn').onclick=()=>{if(current)addWaypoint(current.lat,current.lon);else $('windSummary').textContent='Find your location first, or tap directly on the map to add a waypoint.'};
-$('locateBtn').onclick=()=>{
- if(!navigator.geolocation){$('gpsStatus').textContent='GPS UNAVAILABLE';return}
- $('gpsStatus').textContent='LOCATING…';
- navigator.geolocation.getCurrentPosition(pos=>{
-  current={lat:pos.coords.latitude,lon:pos.coords.longitude};
-  map.setView([current.lat,current.lon],16);
-  if(window.userMarker)map.removeLayer(window.userMarker);
-  window.userMarker=L.circleMarker([current.lat,current.lon],{radius:8,color:'#fff',weight:3,fillColor:'#3186ff',fillOpacity:1}).addTo(map).bindPopup('Your current location');
-  $('gpsStatus').textContent='GPS ACTIVE';$('coordStatus').textContent=current.lat.toFixed(4)+', '+current.lon.toFixed(4);
-  loadWind(current.lat,current.lon).then(w=>$('windSummary').textContent=`Current location: ${Math.round(w.speed)} mph, blowing toward ${w.toName} (${w.to}°).`).catch(()=>$('windSummary').textContent='Location found; wind forecast unavailable.');
- },err=>{$('gpsStatus').textContent='GPS ERROR';$('coordStatus').textContent=err.message+' · allow location in Chrome site settings'},{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
-};
-$('refreshWindBtn').onclick=refreshAll;
-$('exportBtn').onclick=()=>{
- const blob=new Blob([JSON.stringify(waypoints,null,2)],{type:'application/json'}),a=document.createElement('a');
- a.href=URL.createObjectURL(blob);a.download='hill-country-hunting-waypoints.json';a.click();URL.revokeObjectURL(a.href);
-};
-$('photoInput').onchange=e=>{const f=e.target.files[0];$('photoPreview').textContent=f?'Photo selected: '+f.name+'. AI identification is not connected yet.':''};
-function net(){const online=navigator.onLine;$('netStatus').textContent=online?'ONLINE':'OFFLINE';$('offlineInfo').textContent='App shell cache: '+('serviceWorker' in navigator?'supported':'not supported')+'. Network: '+(online?'online':'offline')+'. Waypoints remain stored on this device.'}
-window.addEventListener('online',net);window.addEventListener('offline',net);
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){
- navigator.serviceWorker.register('./sw.js').then(()=>{$('offlineInfo').textContent='Offline app-shell caching is installed. Visit once online before testing airplane mode.'}).catch(()=>{$('offlineInfo').textContent='Could not install offline app-shell cache on this visit.'});
-}
-net();render();
-if(waypoints.length)refreshAll();
+function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2600)}
+function load(){try{let raw=localStorage.getItem(STORE);if(!raw){raw=localStorage.getItem(OLD);if(raw)localStorage.setItem(STORE,raw)}stands=raw?JSON.parse(raw):[];if(!Array.isArray(stands))stands=[]}catch(e){stands=[]}}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(stands))}catch(e){toast('Storage full. Export a backup and remove large photos.')} }
+function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function deg(d){return ((d%360)+360)%360}
+function compass(d){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg(d)/45)%8]}
+function mph(kmh){return (kmh*.621371).toFixed(1)}
+function markerFor(s){const m=L.circleMarker([s.lat,s.lon],{radius:8,color:'#e4c77c',weight:2,fillColor:'#d9bd78',fillOpacity:1}).addTo(map);m.bindTooltip(s.name||s.type);m.on('click',()=>selectStand(s.id));s._marker=m}
+function addStand(lat,lon){pendingPoint={lat,lon};$('standName').focus();toast('Name your new map pin, then tap Save map pin')}
+function savePending(){if(!pendingPoint){toast('Tap the map first to place a pin');return}const s={id:uid(),name:$('standName').value.trim()||$('standType').value,type:$('standType').value,lat:pendingPoint.lat,lon:pendingPoint.lon,notes:'',access:'',created:Date.now()};stands.push(s);persist();pendingPoint=null;$('standName').value='';renderStands();selectStand(s.id);toast('Waypoint saved')}
+function renderStands(){stands.forEach(s=>{if(s._marker)map.removeLayer(s._marker);markerFor(s)});$('standList').innerHTML='';if(!stands.length){$('standList').innerHTML='<p class="muted">No saved waypoints yet. Tap the map to add your first stand.</p>';return}
+stands.forEach(s=>{const el=document.createElement('div');el.className='stand';const wind=s.wind?`${s.wind.speed} mph · blowing toward ${s.wind.dir} (${Math.round(s.wind.to)}°)`:'Wind forecast not loaded';el.innerHTML=`<div class="standtop"><div><div class="standname"></div><div class="small"></div></div><button class="danger">Delete</button></div><div class="windline"><div class="windarrow"><span>➤</span></div><div class="windtext"></div></div><div class="row" style="margin-top:10px"><button class="open">Open / edit</button><button class="center">Show on map</button></div>`;el.querySelector('.standname').textContent=s.name;el.querySelector('.small').textContent=`${s.type} · ${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;el.querySelector('.windtext').textContent=wind;el.querySelector('.windarrow span').style.transform=`rotate(${s.wind?s.wind.to:0}deg)`;el.querySelector('.open').onclick=()=>selectStand(s.id);el.querySelector('.center').onclick=()=>{map.setView([s.lat,s.lon],16);selectStand(s.id)};el.querySelector('.danger').onclick=()=>{if(confirm(`Delete ${s.name}?`)){stands=stands.filter(x=>x.id!==s.id);if(selectedId===s.id)selectedId=null;persist();renderStands();showEditor(null)}};$('standList').appendChild(el)})}
+function showEditor(s){$('editor').hidden=!s;$('editorEmpty').hidden=!!s;if(!s)return;$('editCoords').textContent=`${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;$('editName').value=s.name||'';$('editNotes').value=s.notes||'';$('editAccess').value=s.access||'';$('photoPreview').style.display=s.photo?'block':'none';$('photoPreview').src=s.photo||''}
+function selectStand(id){const s=stands.find(x=>x.id===id);if(!s)return;selectedId=id;showEditor(s);showWind(s);map.panTo([s.lat,s.lon])}
+function saveDetails(){const s=stands.find(x=>x.id===selectedId);if(!s)return;s.name=$('editName').value.trim()||s.type;s.notes=$('editNotes').value;s.access=$('editAccess').value;persist();renderStands();showEditor(s);toast('Stand details saved')}
+async function fetchWind(lat,lon){const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&forecast_days=1&timezone=auto`;const r=await fetch(url);if(!r.ok)throw Error('Weather service unavailable');return r.json()}
+function applyWind(s,j){const c=j.current||{};const from=Number(c.wind_direction_10m||0),to=deg(from+180),speed=mph(Number(c.wind_speed_10m||0));s.wind={speed,from,to,dir:compass(to),updated:Date.now()};s.hourly=j.hourly?{time:j.hourly.time.slice(0,12),speed:j.hourly.wind_speed_10m.slice(0,12),direction:j.hourly.wind_direction_10m.slice(0,12)}:null}
+function showWind(s){$('selectedWind').textContent=s.wind?`${s.name}: ${s.wind.speed} mph blowing toward ${s.wind.dir} (${Math.round(s.wind.to)}°). Updated ${new Date(s.wind.updated).toLocaleTimeString()}.`:'Loading forecast for '+s.name+'…';const h=s.hourly;if(h){$('windHistory').innerHTML='<b>Upcoming hourly forecast</b><br>'+h.time.map((t,i)=>`${new Date(t).toLocaleTimeString([],{hour:'numeric'})}: ${mph(Number(h.speed[i]))} mph ${compass(deg(Number(h.direction[i])+180))}`).join(' · ')}}
+async function refreshOne(s){try{const j=await fetchWind(s.lat,s.lon);applyWind(s,j);persist();renderStands();if(selectedId===s.id)showWind(s);return j}catch(e){if(selectedId===s.id)$('selectedWind').textContent='Could not load wind. Check your connection and try again.';throw e}}
+async function refreshAll(){if(!stands.length){toast('Add a stand first');return}toast('Refreshing stand forecasts…');for(const s of stands){try{await refreshOne(s)}catch(e){}}await refreshOverlay();toast('Wind forecasts refreshed')}
+async function refreshOverlay(){if(!map)return;const c=map.getCenter();try{const j=await fetchWind(c.lat,c.lng);const w=j.current;windData={speed:Number(w.wind_speed_10m||0),to:deg(Number(w.wind_direction_10m||0)+180)};initParticles();drawWind()}catch(e){if(!windData)toast('Map wind overlay needs an internet connection')}}
+function initParticles(){const canvas=$('windCanvas'),rect=canvas.getBoundingClientRect();particles=Array.from({length:Math.max(35,Math.floor(rect.width*rect.height/7000))},()=>({x:Math.random()*rect.width,y:Math.random()*rect.height,age:Math.random()*100}))}
+function resizeCanvas(){const c=$('windCanvas'),r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);initParticles()}
+function drawWind(){const canvas=$('windCanvas'),ctx=canvas.getContext('2d'),r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);if(!windOn||!windData)return;const rad=windData.to*Math.PI/180,spd=Math.max(0.8,Math.min(3.2,windData.speed/5));const color=windData.speed<8?'rgba(241,209,138,.75)':windData.speed<18?'rgba(141,199,160,.78)':'rgba(225,139,115,.82)';ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=1.5;particles.forEach(p=>{const x=p.x,y=p.y;p.x+=Math.sin(rad)*spd*1.8;p.y-=Math.cos(rad)*spd*1.8;p.age++;if(p.x<0||p.x>r.width||p.y<0||p.y>r.height||p.age>130){p.x=Math.random()*r.width;p.y=Math.random()*r.height;p.age=0}const x2=x+Math.sin(rad)*10,y2=y-Math.cos(rad)*10;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();ctx.beginPath();ctx.arc(x2,y2,1.5,0,Math.PI*2);ctx.fill()});animFrame=requestAnimationFrame(drawWind)}
+function exportBackup(){const data=JSON.stringify({app:'Hill Country Hunting',version:'0.6',exported:new Date().toISOString(),stands:stands.map(({_marker,...s})=>s)},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download='hill-country-hunting-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importBackup(file){const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result),arr=Array.isArray(obj)?obj:obj.stands;if(!Array.isArray(arr))throw Error();arr.forEach(s=>{if(Number.isFinite(+s.lat)&&Number.isFinite(+s.lon)){s.id=s.id||uid();s.lat=+s.lat;s.lon=+s.lon}});stands=arr.filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon));persist();renderStands();toast('Backup imported')}catch(e){toast('That backup file could not be read')}};r.readAsText(file)}
+function initMap(){map=L.map('map',{zoomControl:true}).setView([43.05,-75.85],12);baseLayers.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19});baseLayers.topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17});baseLayers.street=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});baseLayers.sat.addTo(map);map.on('click',e=>addStand(e.latlng.lat,e.latlng.lng));map.on('moveend',()=>{if(Date.now()-lastWindFetch>120000){lastWindFetch=Date.now();refreshOverlay()}});setTimeout(()=>{map.invalidateSize();resizeCanvas();refreshOverlay()},250);new ResizeObserver(()=>{resizeCanvas()}).observe($('mapWrap'))}
+$('savePending').onclick=savePending;$('gpsBtn').onclick=()=>{if(!navigator.geolocation){toast('GPS is not available in this browser');return}navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,16);$('gpsStatus').textContent='GPS active';L.circleMarker(ll,{radius:7,color:'#fff',fillColor:'#2686ff',fillOpacity:1}).addTo(map).bindTooltip('Your location')},e=>toast('Could not get GPS location. Check browser permissions.'),{enableHighAccuracy:true,timeout:12000})};
+$('layerSelect').onchange=e=>{Object.values(baseLayers).forEach(l=>map.removeLayer(l));baseLayers[e.target.value].addTo(map)};
+$('windToggle').onclick=()=>{windOn=!windOn;$('windToggle').textContent=windOn?'〰 Wind overlay ON':'〰 Wind overlay OFF';$('windToggle').classList.toggle('active',windOn);if(!windOn)$('windCanvas').getContext('2d').clearRect(0,0,$('windCanvas').width,$('windCanvas').height)};
+$('refreshWind').onclick=refreshAll;$('exportBtn').onclick=exportBackup;$('importBtn').onclick=()=>$('importFile').click();$('importFile').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0])};
+$('saveDetails').onclick=saveDetails;$('removePhoto').onclick=()=>{const s=stands.find(x=>x.id===selectedId);if(s){delete s.photo;persist();showEditor(s)}};
+$('editPhoto').onchange=e=>{const f=e.target.files[0],s=stands.find(x=>x.id===selectedId);if(!f||!s)return;if(f.size>1500000){toast('Choose a photo under 1.5 MB');return}const r=new FileReader();r.onload=()=>{s.photo=r.result;$('photoPreview').src=s.photo;$('photoPreview').style.display='block';persist()};r.readAsDataURL(f)};
+$('fieldPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('fieldPreview').src=r.result;$('fieldPreview').style.display='block'};r.readAsDataURL(f)};
+$('copyFieldPrompt').onclick=()=>{const q=$('fieldQuestion').value||'Identify the visible wildlife sign, plant, tree or track. Explain confidence and alternatives.';const p='Please identify this hunting field photo. '+q+' Describe visible evidence, likely species, confidence, and what additional photo or scale would help. Do not overstate certainty.';if(navigator.clipboard?.writeText)navigator.clipboard.writeText(p).then(()=>toast('Prompt copied')).catch(()=>toast('Clipboard unavailable'));else toast('Clipboard unavailable in this browser')};
+$('backupReminder').onclick=()=>toast('Export a backup before clearing browser data or changing devices');
+load();initMap();renderStands();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+if(stands.length)refreshAll();
 })();
 </script>
-</body>
-</html>
+</body></html>

@@ -2,8 +2,9 @@
   "name": "Hill Country Hunting",
   "short_name": "Hill Country",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#14251d",
-  "theme_color": "#14251d",
-  "description": "GPS hunting map, saved waypoints and stand wind forecasts."
+  "background_color": "#10251b",
+  "theme_color": "#10251b",
+  "description": "Know the land. Hunt the wind."
 }
