@@ -12,10 +12,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--bg:#10251b;--panel:#1a3326;--panel2:#203b2c;--gold:#d9bd78;--cream:#f2eee2;--muted:#aab8ad;--line:#3c5947;--red:#d87963;--green:#7bb58c}
-*{box-sizing:border-box}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23304b39' stroke-width='1' opacity='.55'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
+*{box-sizing:border-box;min-width:0}html,body{width:100%;max-width:100%;overflow-x:hidden}body{margin:0;background-color:var(--bg);color:var(--cream);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='300' viewBox='0 0 360 300'%3E%3Cg fill='none' stroke='%23304b39' stroke-width='1' opacity='.55'%3E%3Cpath d='M-20 70 Q40 5 100 70 T220 70 T400 70 M-20 95 Q40 30 100 95 T220 95 T400 95 M-20 220 Q40 155 100 220 T220 220 T400 220 M-20 245 Q40 180 100 245 T220 245 T400 245'/%3E%3C/g%3E%3C/svg%3E")}
 header{padding:12px 14px 14px;border-bottom:1px solid var(--line);background:#10251bf2;position:relative;text-align:center}.brandLogo{display:block;width:min(100%,520px);height:auto;max-height:170px;object-fit:contain;margin:0 auto 5px;border-radius:10px}.brandTitle{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:18px}
 .brand{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:20px}.tag{font-size:11px;letter-spacing:2px;color:var(--muted);margin-top:2px}
-main{max-width:1000px;margin:auto;padding:14px;display:grid;gap:14px}
+main{width:100%;max-width:1000px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;overflow-x:clip}
 .panel{background:#1a3326ed;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px #0002}
 h2{font-size:15px;letter-spacing:2px;color:var(--gold);margin:0 0 13px;text-transform:uppercase}
 #map{height:min(62vh,560px);min-height:330px;border-radius:16px;overflow:hidden;border:1px solid #536b59}
@@ -41,17 +41,23 @@ label{display:block;color:var(--gold);font-size:12px;letter-spacing:1px;margin:1
 footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px}
 @media(min-width:800px){main{grid-template-columns:1.15fr .85fr;align-items:start} .mapPanel{grid-column:1/-1}#map{height:560px}}
 
-.weatherGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.weatherGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px;min-width:0}
 .weatherMetric{background:#10251b;border:1px solid var(--line);border-radius:13px;padding:11px}
 .weatherMetric .value{font-size:21px;font-weight:800;color:var(--cream)}
 .weatherMetric .caption{font-size:11px;color:var(--muted);letter-spacing:1px}
-.weatherHero{display:flex;align-items:center;gap:14px;background:#10251b;border:1px solid var(--line);border-radius:15px;padding:14px}
+.weatherHero{display:flex;align-items:center;gap:12px;min-width:0;max-width:100%;background:#10251b;border:1px solid var(--line);border-radius:15px;padding:14px}.weatherHero>div{min-width:0;overflow-wrap:anywhere}
 .weatherIcon{font-size:42px;line-height:1}
 .weatherTemp{font-size:38px;font-weight:900;line-height:1.1;color:var(--gold)}
-.hourlyStrip{display:flex;gap:8px;overflow-x:auto;padding:10px 0 3px}
-.hourItem{min-width:76px;text-align:center;background:#10251b;border:1px solid var(--line);border-radius:12px;padding:9px 7px;font-size:12px}
+.hourlyStrip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 0 3px;min-width:0}
+.hourItem{min-width:0;width:100%;text-align:center;background:#10251b;border:1px solid var(--line);border-radius:12px;padding:9px 5px;font-size:12px;overflow-wrap:anywhere}
 .hourItem strong{display:block;font-size:17px;color:var(--gold)}
-@media(min-width:800px){.weatherGrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:800px){.weatherGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.hourlyStrip{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+
+.panel,.mapPanel,.mapwrap,#map,.leaflet-container{min-width:0;max-width:100%}
+.row{min-width:0;max-width:100%;flex-wrap:wrap}
+.row>*{min-width:0;max-width:100%}
+.weatherMetric{min-width:0;overflow-wrap:anywhere}
 
 </style>
 </head>
