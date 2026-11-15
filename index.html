@@ -31,6 +31,15 @@ input,select,textarea{width:100%;min-width:0}textarea{min-height:84px;resize:ver
 .windline{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;color:var(--gold)}
 .windarrow{width:48px;height:48px;border-radius:50%;background:#3a271d;border:1px solid #b99d60;display:grid;place-items:center;flex:none}
 .windarrow span{display:block;font-size:34px;line-height:1;transform:rotate(0deg);transition:transform .5s}
+.thermalBox{margin-top:14px;padding:13px;border:1px solid #66503f;border-radius:14px;background:#11100f}
+.thermalHeading{font-size:12px;font-weight:900;letter-spacing:1.5px;color:var(--gold);margin-bottom:8px}
+.thermalHourly{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.thermalHour{background:#1b1815;border:1px solid var(--line);border-radius:11px;padding:9px;min-width:0}
+.thermalHour strong{display:block;color:var(--cream);font-size:14px}
+.thermalHour .thermalState{display:block;color:var(--gold);font-weight:800;margin-top:3px}
+.thermalHour small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+@media(min-width:800px){.thermalHourly{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 label{display:block;color:var(--gold);font-size:12px;letter-spacing:1px;margin:10px 0 5px}
 #windCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:650}
 .mapwrap{position:relative}
@@ -299,6 +308,12 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <h2>Local wind conditions</h2>
 <div id="selectedWind" class="muted">Select a waypoint to see its forecast.</div>
 <div id="windHistory" class="small" style="margin-top:10px"></div>
+<div class="thermalBox">
+  <div class="thermalHeading">THERMAL FORECAST · SELECTED WAYPOINT</div>
+  <div id="thermalSummary" class="muted">Select a waypoint to estimate rising and sinking air.</div>
+  <div id="thermalHourly" class="thermalHourly"></div>
+  <div class="hint">Thermals are an estimate based on forecast sunlight, cloud cover, temperature trend and wind. It cannot resolve your exact slope, canopy, ravine or stand-level air movement. Always check milkweed, powder or other field indicators.</div>
+</div>
 <div class="hint">Wind forecasts come from Open-Meteo at the selected stand coordinates. Hills, valleys, canopy and thermals can change actual stand-level wind.</div>
 </section>
 
@@ -318,7 +333,7 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>In Sight Outdoors · v0.9.0 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v0.9.1 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -333,7 +348,14 @@ const TRACK_STORE='iso_track_v1';
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2600)}
 function load(){try{let raw=localStorage.getItem(STORE);if(!raw){raw=localStorage.getItem(OLD);if(raw)localStorage.setItem(STORE,raw)}stands=raw?JSON.parse(raw):[];if(!Array.isArray(stands))stands=[]}catch(e){stands=[]}}
-function persist(){try{localStorage.setItem(STORE,JSON.stringify(stands))}catch(e){toast('Storage full. Export a backup and remove large photos.')} }
+function persist(){
+  try{
+    const clean=stands.map(({_marker,...s})=>s);
+    localStorage.setItem(STORE,JSON.stringify(clean));
+  }catch(e){
+    toast('Could not save waypoints. Export a backup and check available browser storage.');
+  }
+}
 function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function deg(d){return ((d%360)+360)%360}
 function compass(d){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg(d)/45)%8]}
@@ -344,11 +366,79 @@ function savePending(){if(!pendingPoint){toast('Tap the map first to place a pin
 function renderStands(){stands.forEach(s=>{if(s._marker)map.removeLayer(s._marker);markerFor(s)});$('standList').innerHTML='';if(!stands.length){$('standList').innerHTML='<p class="muted">No saved waypoints yet. Tap the map to add your first stand.</p>';return}
 stands.forEach(s=>{const el=document.createElement('div');el.className='stand';const wind=s.wind?`${s.wind.speed} mph · blowing toward ${s.wind.dir} (${Math.round(s.wind.to)}°)`:'Wind forecast not loaded';el.innerHTML=`<div class="standtop"><div><div class="standname"></div><div class="small"></div></div><button class="danger">Delete</button></div><div class="windline"><div class="windarrow"><span>➤</span></div><div class="windtext"></div></div><div class="row" style="margin-top:10px"><button class="open">Open / edit</button><button class="center">Show on map</button></div>`;el.querySelector('.standname').textContent=s.name;el.querySelector('.small').textContent=`${s.type} · ${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;el.querySelector('.windtext').textContent=wind;el.querySelector('.windarrow span').style.transform=`rotate(${s.wind?s.wind.to:0}deg)`;el.querySelector('.open').onclick=()=>selectStand(s.id);el.querySelector('.center').onclick=()=>{map.setView([s.lat,s.lon],16);selectStand(s.id)};el.querySelector('.danger').onclick=()=>{if(confirm(`Delete ${s.name}?`)){stands=stands.filter(x=>x.id!==s.id);if(selectedId===s.id)selectedId=null;persist();renderStands();showEditor(null)}};$('standList').appendChild(el)})}
 function showEditor(s){$('editor').hidden=!s;$('editorEmpty').hidden=!!s;if(!s)return;$('editCoords').textContent=`${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;$('editName').value=s.name||'';$('editNotes').value=s.notes||'';$('editAccess').value=s.access||'';$('photoPreview').style.display=s.photo?'block':'none';$('photoPreview').src=s.photo||''}
-function selectStand(id){const s=stands.find(x=>x.id===id);if(!s)return;selectedId=id;showEditor(s);showWind(s);map.panTo([s.lat,s.lon])}
+function selectStand(id){const s=stands.find(x=>x.id===id);if(!s)return;selectedId=id;showEditor(s);showWind(s);loadThermals(s);map.panTo([s.lat,s.lon])}
 function saveDetails(){const s=stands.find(x=>x.id===selectedId);if(!s)return;s.name=$('editName').value.trim()||s.type;s.notes=$('editNotes').value;s.access=$('editAccess').value;persist();renderStands();showEditor(s);toast('Stand details saved')}
 async function fetchWind(lat,lon){const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&forecast_days=1&timezone=auto`;const r=await fetch(url);if(!r.ok)throw Error('Weather service unavailable');return r.json()}
 function applyWind(s,j){const c=j.current||{};const from=Number(c.wind_direction_10m||0),to=deg(from+180),speed=mph(Number(c.wind_speed_10m||0));s.wind={speed,from,to,dir:compass(to),updated:Date.now()};s.hourly=j.hourly?{time:j.hourly.time.slice(0,12),speed:j.hourly.wind_speed_10m.slice(0,12),direction:j.hourly.wind_direction_10m.slice(0,12)}:null}
 function showWind(s){$('selectedWind').textContent=s.wind?`${s.name}: ${s.wind.speed} mph blowing toward ${s.wind.dir} (${Math.round(s.wind.to)}°). Updated ${new Date(s.wind.updated).toLocaleTimeString()}.`:'Loading forecast for '+s.name+'…';const h=s.hourly;if(h){$('windHistory').innerHTML='<b>Upcoming hourly forecast</b><br>'+h.time.map((t,i)=>`${new Date(t).toLocaleTimeString([],{hour:'numeric'})}: ${mph(Number(h.speed[i]))} mph ${compass(deg(Number(h.direction[i])+180))}`).join(' · ')}}
+
+let thermalRequestId=0;
+function thermalAssessment(hourly,i){
+  const rad=Number(hourly.shortwave_radiation?.[i]||0);
+  const cloud=Number(hourly.cloud_cover?.[i]||0);
+  const wind=Number(hourly.wind_speed_10m?.[i]||0);
+  const temp=Number(hourly.temperature_2m?.[i]||0);
+  const prev=Number(hourly.temperature_2m?.[Math.max(0,i-1)]||temp);
+  const next=Number(hourly.temperature_2m?.[Math.min(hourly.temperature_2m.length-1,i+1)]||temp);
+  const warming=next-prev;
+  let state,detail;
+  if(wind>=13){
+    state='Wind-dominated';
+    detail='Strong ambient wind may mask local thermal movement.';
+  }else if(rad<45){
+    state='Sinking / cooling tendency';
+    detail='Little solar heating; cool air may drain downhill, especially on slopes and in hollows.';
+  }else if(rad<180 || cloud>82){
+    state='Weak / variable';
+    detail='Limited or interrupted solar heating; expect mixed local air movement.';
+  }else if(rad>=520 && wind<7 && cloud<65){
+    state='Strong rising potential';
+    detail='Good solar heating may lift air on sunlit slopes; shaded terrain can behave differently.';
+  }else if(rad>=220 && wind<11){
+    state='Rising potential';
+    detail='Solar heating may create upslope flow on exposed, sunlit terrain.';
+  }else{
+    state='Mixed / transitioning';
+    detail='Heating, cloud cover and background wind may compete.';
+  }
+  if(warming>=1.2 && rad>100 && wind<10 && state!=='Wind-dominated'){
+    detail+=' Air temperature is rising, supporting daytime lift.';
+  }
+  const signal=(cloud>80||wind>11)?'Lower confidence':'Moderate confidence';
+  return {state,detail,signal,rad,cloud,wind,temp};
+}
+async function loadThermals(s){
+  const request=++thermalRequestId;
+  $('thermalSummary').textContent='Loading hourly thermal estimate for '+s.name+'…';
+  $('thermalHourly').innerHTML='';
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&hourly=temperature_2m,cloud_cover,shortwave_radiation,wind_speed_10m,precipitation_probability&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=2&timezone=auto`;
+    const r=await fetch(url);
+    if(!r.ok)throw Error('Forecast unavailable');
+    const j=await r.json();
+    if(request!==thermalRequestId)return;
+    const h=j.hourly;
+    if(!h?.time?.length)throw Error('No hourly data');
+    const now=Date.now();
+    let start=h.time.findIndex(t=>new Date(t).getTime()>=now-30*60*1000);
+    if(start<0)start=0;
+    const end=Math.min(start+8,h.time.length);
+    const cards=[];
+    for(let i=start;i<end;i++){
+      const a=thermalAssessment(h,i);
+      const time=new Date(h.time[i]).toLocaleTimeString([],{hour:'numeric'});
+      cards.push(`<div class="thermalHour"><strong>${time} · ${Math.round(a.temp)}°F</strong><span class="thermalState">${a.state}</span><small>Sun energy ${Math.round(a.rad)} W/m² · Cloud ${Math.round(a.cloud)}% · Wind ${Math.round(a.wind)} mph</small></div>`);
+    }
+    const current=thermalAssessment(h,start);
+    $('thermalSummary').textContent=`For ${s.name}: ${current.state.toLowerCase()}. ${current.detail} ${current.signal}.`;
+    $('thermalHourly').innerHTML=cards.join('');
+  }catch(e){
+    if(request===thermalRequestId){
+      $('thermalSummary').textContent='Thermal estimate unavailable. Check your connection and try refreshing the waypoint wind forecast.';
+    }
+  }
+}
+
 async function refreshOne(s){try{const j=await fetchWind(s.lat,s.lon);applyWind(s,j);persist();renderStands();if(selectedId===s.id)showWind(s);return j}catch(e){if(selectedId===s.id)$('selectedWind').textContent='Could not load wind. Check your connection and try again.';throw e}}
 async function refreshAll(){toast('Refreshing map wind…');await refreshOverlay();if(!stands.length){toast('Map wind refreshed. Add a stand for a stand-specific forecast.');return}for(const s of stands){try{await refreshOne(s)}catch(e){}}toast('Wind forecasts refreshed')}
 async function refreshOverlay(){if(!map)return;const c=map.getCenter();try{const j=await fetchWind(c.lat,c.lng);const w=j.current;windData={speed:Number(w.wind_speed_10m||0),to:deg(Number(w.wind_direction_10m||0)+180)};initParticles();drawWind()}catch(e){if(!windData)toast('Map wind overlay needs an internet connection')}}
@@ -601,7 +691,7 @@ load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
 loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',renderBookmarks);$('bookmarkFilter').addEventListener('change',renderBookmarks);$('bookmarkSave').onclick=saveBookmark;$('bookmarkCancel').onclick=resetBookmarkForm;
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=090-accounts').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=091-waypoints-thermals').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 })();
 </script>
