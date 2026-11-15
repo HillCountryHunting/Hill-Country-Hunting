@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14251d">
+<title>Hill Country Hunting</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--forest:#14251d;--forest2:#20392b;--gold:#c5a66a;--cream:#f2f0e8;--muted:#aab7ac;--line:#34483a}
+*{box-sizing:border-box}body{margin:0;background-color:var(--forest);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='360' viewBox='0 0 420 360'%3E%3Cg fill='none' stroke='%23869a79' stroke-opacity='.13' stroke-width='1.15'%3E%3Cpath d='M-30 65 C35 5 95 8 130 48 S220 105 270 48 370 5 450 48 M-35 82 C35 22 92 28 125 65 S220 125 280 66 375 23 450 67 M-30 105 C30 52 85 52 120 85 S220 148 290 88 380 48 450 92 M-35 245 C25 185 95 190 135 225 S230 285 285 225 375 185 450 225 M-35 265 C25 205 95 210 135 245 S230 305 285 245 375 205 450 245 M-35 285 C25 225 95 230 135 265 S230 325 285 265 375 225 450 265'/%3E%3Cpath d='M65 -25 C15 35 18 95 60 130 S115 220 55 275 20 340 65 390 M85 -25 C35 35 38 95 80 130 S135 220 75 275 40 340 85 390 M345 -25 C295 35 298 95 340 130 S395 220 335 275 300 340 345 390'/%3E%3C/g%3E%3C/svg%3E");background-attachment:fixed;color:var(--cream);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:16px 18px 13px;background:linear-gradient(135deg,#172c21,#0d1913);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.logo{width:43px;height:43px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-size:22px}
+.brand{min-width:0}.brand h1{font-size:17px;letter-spacing:1.5px;margin:0;font-weight:850}.brand p{font-size:10px;color:var(--muted);letter-spacing:2px;margin:3px 0 0}
+.status{margin-left:auto;font-size:11px;color:var(--muted);text-align:right}.status b{display:block;color:#d7c28e;font-size:11px}
+main{max-width:900px;margin:auto;padding:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+button,.select{border:1px solid #536555;background:#263d2e;color:#f4f1e8;padding:10px 12px;border-radius:9px;font-weight:650;font-size:13px}
+button.primary{background:var(--gold);border-color:var(--gold);color:#17251b}
+button:active{transform:scale(.98)}
+#map{height:53vh;min-height:340px;border:1px solid #536555;border-radius:13px;overflow:hidden;background:#25392d;z-index:1}
+.hint{font-size:11px;color:var(--muted);margin:8px 2px 14px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+.panel{background:#1c3024;border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h2{font-size:13px;letter-spacing:1.4px;margin:0 0 10px;color:#dfc58e}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,select{background:#102017;color:var(--cream);border:1px solid #526454;border-radius:8px;padding:10px;min-width:0}
+input{flex:1}
+#waypoints{display:grid;gap:8px;margin-top:10px}
+.wp{background:#14251d;border:1px solid #34483a;border-radius:8px;padding:10px;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.wp small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.wind{font-size:13px;color:#d8c38f}
+.ai-note{font-size:12px;color:var(--muted);line-height:1.5}
+footer{padding:18px 14px 28px;text-align:center;color:#87978a;font-size:10px}
+.leaflet-control-attribution{font-size:9px!important}
+@media(min-width:700px){main{padding:20px}.grid{grid-template-columns:1fr 1fr}#map{height:60vh}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">♜</div>
+ <div class="brand"><h1>HILL COUNTRY HUNTING</h1><p>KNOW THE LAND. HUNT THE WIND.</p></div>
+ <div class="status"><b id="gpsStatus">GPS OFF</b><span id="coordStatus">Waiting for location</span></div>
+</header>
+<main>
+ <div class="toolbar">
+  <button class="primary" id="locateBtn">◎ Find my location</button>
+  <button id="addBtn">＋ Add waypoint</button>
+  <select class="select" id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
+ </div>
+ <div id="map" aria-label="Hunting map"></div>
+ <div class="hint">Tap the map to place a waypoint. Satellite imagery is provided by Esri; map availability and detail vary by area.</div>
+ <div class="grid">
+  <section class="panel">
+   <h2>YOUR WAYPOINTS</h2>
+   <div class="row"><input id="wpName" placeholder="Waypoint name (e.g. Ridge Stand)"><select id="wpType"><option>Tree stand</option><option>Ground blind</option><option>Scrape</option><option>Rub</option><option>Trail</option><option>Bedding area</option><option>Camera</option><option>Access point</option><option>Other</option></select></div>
+   <div id="waypoints"><div class="ai-note">No waypoints saved yet. Tap the map or use Add waypoint.</div></div>
+  </section>
+  <section class="panel">
+   <h2>WIND CONDITIONS</h2>
+   <div id="windSummary" class="wind">Find your location or select a waypoint to check nearby wind.</div>
+   <p class="ai-note">Wind comes from the Open-Meteo weather model and is an estimate for the selected coordinates. Hills, timber and valleys can change wind at stand level.</p>
+   <button id="windBtn">↻ Refresh wind</button>
+  </section>
+  <section class="panel">
+   <h2>FIELD AI ASSISTANT</h2>
+   <p class="ai-note">Take a photo of scat, tracks, plants, trees or habitat. Photo identification will be connected in a later version through a secure server; no AI API key belongs in this app's browser code.</p>
+   <input id="photoInput" type="file" accept="image/*" capture="environment">
+   <div id="photoPreview" class="ai-note"></div>
+  </section>
+  <section class="panel">
+   <h2>FIELD NOTES</h2>
+   <p class="ai-note">Waypoints are currently saved on this device's browser. They are not yet synced to an account or backed up online.</p>
+   <button id="exportBtn">↓ Export waypoints</button>
+  </section>
+ </div>
+</main>
+<footer>HILL COUNTRY HUNTING • FIELD VERSION 0.3<br>Property boundaries are not included. This map is not a legal survey.</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+ const $=id=>document.getElementById(id);
+ const map=L.map('map',{zoomControl:true}).setView([43.0,-75.9],12);
+ const layers={
+  sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}),
+  topo:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap contributors'}),
+  street:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'})
+ };
+ layers.sat.addTo(map);
+ $('layerSelect').addEventListener('change',e=>{Object.values(layers).forEach(l=>map.removeLayer(l));layers[e.target.value].addTo(map)});
+ let current=null, pending=null, markers=[];
+ let waypoints=JSON.parse(localStorage.getItem('hch_waypoints_v2')||'[]');
+ function save(){localStorage.setItem('hch_waypoints_v2',JSON.stringify(waypoints));render();}
+ function markerIcon(){return L.divIcon({className:'',html:'<div style="width:17px;height:17px;background:#d2b36e;border:3px solid #17251b;border-radius:50%;box-shadow:0 1px 7px #000"></div>',iconSize:[17,17],iconAnchor:[8,8]})}
+ function render(){
+  markers.forEach(m=>map.removeLayer(m));markers=[];
+  waypoints.forEach((w,i)=>{let m=L.marker([w.lat,w.lon],{icon:markerIcon()}).addTo(map).bindPopup('<b>'+escapeHtml(w.name)+'</b><br>'+escapeHtml(w.type)+'<br><button onclick="window.hchWind('+i+')">Check wind</button>');markers.push(m)});
+  $('waypoints').innerHTML=waypoints.length?waypoints.map((w,i)=>'<div class="wp"><div><b>'+escapeHtml(w.name)+'</b><small>'+escapeHtml(w.type)+' • '+w.lat.toFixed(5)+', '+w.lon.toFixed(5)+'</small></div><button data-delete="'+i+'">Delete</button></div>').join(''):'<div class="ai-note">No waypoints saved yet. Tap the map or use Add waypoint.</div>';
+  document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{waypoints.splice(+b.dataset.delete,1);save()}));
+ }
+ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function addWaypoint(lat,lon){let name=$('wpName').value.trim()||$('wpType').value;waypoints.push({name,type:$('wpType').value,lat,lon});$('wpName').value='';save();checkWind(lat,lon);}
+ map.on('click',e=>addWaypoint(e.latlng.lat,e.latlng.lng));
+ $('addBtn').onclick=()=>{if(current){addWaypoint(current.lat,current.lon)}else{$('windSummary').textContent='First tap Find my location, or tap directly on the map to place a waypoint.'}};
+ $('locateBtn').onclick=()=>{if(!navigator.geolocation){$('gpsStatus').textContent='GPS UNAVAILABLE';return}
+  $('gpsStatus').textContent='LOCATING…';
+  navigator.geolocation.getCurrentPosition(pos=>{current={lat:pos.coords.latitude,lon:pos.coords.longitude};map.setView([current.lat,current.lon],16);if(window.userMarker)map.removeLayer(window.userMarker);window.userMarker=L.circleMarker([current.lat,current.lon],{radius:8,color:'#fff',weight:3,fillColor:'#3186ff',fillOpacity:1}).addTo(map).bindPopup('Your current location');$('gpsStatus').textContent='GPS ACTIVE';$('coordStatus').textContent=current.lat.toFixed(4)+', '+current.lon.toFixed(4);checkWind(current.lat,current.lon)},err=>{$('gpsStatus').textContent='GPS ERROR';$('coordStatus').textContent=err.message+' — allow location in Chrome settings'}, {enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+ };
+ async function checkWind(lat,lon){$('windSummary').textContent='Loading wind…';try{let u='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph';let r=await fetch(u);if(!r.ok)throw Error('Weather service unavailable');let d=await r.json(),w=d.current;let dir=w.wind_direction_10m;let toward=(dir+180)%360;$('windSummary').innerHTML='Wind <b>'+Math.round(w.wind_speed_10m)+' mph</b> • from '+dir+'°<br><span style="font-size:25px">➤</span> blowing toward '+toward+'°'+(w.wind_gusts_10m?' • gusts '+Math.round(w.wind_gusts_10m)+' mph':'');}catch(e){$('windSummary').textContent='Could not load wind right now. Check your internet connection and try again.'}}
+ window.hchWind=i=>checkWind(waypoints[i].lat,waypoints[i].lon);
+ $('windBtn').onclick=()=>{let w=waypoints[waypoints.length-1];if(w)checkWind(w.lat,w.lon);else if(current)checkWind(current.lat,current.lon);else $('windSummary').textContent='Find your location or add a waypoint first.'};
+ $('photoInput').onchange=e=>{let f=e.target.files[0];$('photoPreview').textContent=f?'Photo selected: '+f.name+'. AI identification is not connected yet.':''};
+ $('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(waypoints,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hill-county-waypoints.json';a.click();URL.revokeObjectURL(a.href)};
+ render();
+})();
+</script>
+</body></html>
