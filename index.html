@@ -113,7 +113,7 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <header class="brandHeader">
 <img class="brandLogo" src="./logo.png" alt="In Sight Outdoors — Never a Good Wind">
 <div class="brandTitle">IN SIGHT OUTDOORS</div>
-<div class="tag">Hill Country · NEVER A GOOD WIND</div>
+<div class="tag" id="brandTagline">HILL COUNTRY · NEVER A GOOD WIND</div>
 </header>
 <main>
 <section class="panel mapPanel">
@@ -229,6 +229,7 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <script>
 (()=>{
 'use strict';
+const brandTagline=document.getElementById('brandTagline');if(brandTagline)brandTagline.textContent='HILL COUNTRY · NEVER A GOOD WIND';
 const STORE='hch_waypoints_v3', OLD='hch_waypoints_v2';
 let stands=[], selectedId=null, pendingPoint=null, windData=null, windOn=true, particles=[], animFrame=0, lastWindFetch=0, map, baseLayers={};
 let track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null}, trackWatch=null, trackLine=null, returnLine=null, startMarker=null, currentMarker=null, trackTick=null;
@@ -326,7 +327,7 @@ $('backupReminder').onclick=()=>toast('Export a backup before clearing browser d
 load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=078c-privacy-final').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 })();
 </script>
