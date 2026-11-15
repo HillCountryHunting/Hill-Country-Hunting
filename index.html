@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14231b"><meta name="description" content="Hill County Hunting field map and stand wind tracker">
+  <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css"><title>Hill County Hunting</title>
+</head>
+<body>
+<header><div class="brand-mark">HCH</div><div><h1>HILL COUNTY <span>HUNTING</span></h1><p>FIELD MAP • WIND • WAYPOINTS</p></div><button id="locateBtn" class="icon-btn" aria-label="Find my location">◎</button></header>
+<main>
+  <section class="status-row"><span id="gpsStatus" class="pill">GPS not started</span><span id="weatherStatus" class="pill">Wind waiting</span></section>
+  <section class="map-wrap"><div id="map" aria-label="Hunting map"></div><div class="map-hint">Tap map to drop a waypoint</div><button id="layersBtn" class="map-control">SATELLITE ▾</button></section>
+  <section class="toolbar">
+    <button id="addWaypointBtn" class="primary">＋ Add waypoint</button>
+    <button id="refreshWindBtn" class="secondary">↻ Refresh wind</button>
+  </section>
+  <section class="panel"><div class="panel-head"><h2>YOUR WAYPOINTS</h2><span id="waypointCount">0 saved</span></div><div id="waypointList" class="waypoint-list"><p class="empty">No waypoints yet. Tap the map or use Add waypoint.</p></div></section>
+  <section class="panel ai-panel"><div class="panel-head"><h2>FIELD AI ASSISTANT</h2><span class="coming">SETUP NEXT</span></div><p>Photograph scat, tracks, plants, trees or habitat and ask what you're looking at.</p><button id="photoBtn" class="secondary full">＋ Choose a field photo</button><input id="photoInput" type="file" accept="image/*" capture="environment" hidden><p id="aiNote" class="small-note">Photo selection works; AI identification needs a secure server connection and API key. Never put an AI key in this app's browser code.</p><img id="photoPreview" alt="Selected field photo preview" hidden></section>
+  <section class="footnote">Map imagery: USGS The National Map. Imagery age and detail vary by location. Property boundaries are not included. Do not use this map as a legal survey.</section>
+</main>
+<div id="modal" class="modal" hidden><form id="waypointForm" class="dialog"><div class="panel-head"><h2>NEW WAYPOINT</h2><button type="button" id="closeModal" class="icon-btn">×</button></div><label>Waypoint name<input id="wpName" maxlength="50" placeholder="North ridge stand" required></label><label>Type<select id="wpType"><option>Tree stand</option><option>Ground blind</option><option>Trail camera</option><option>Scrape</option><option>Rub</option><option>Bedding area</option><option>Food source</option><option>Access point</option><option>Other</option></select></label><div id="coordsText" class="small-note"></div><button class="primary full" type="submit">Save waypoint</button></form></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script src="app.js"></script>
+</body></html>
