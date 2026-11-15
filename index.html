@@ -81,6 +81,32 @@ main>section,.panel,#localWeatherPanel{width:100%;min-width:0;max-width:100%;box
  #localWeatherPanel .row{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
+
+/* v0.7.6: phone-first layout containment */
+*,*::before,*::after{box-sizing:border-box}
+html{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+main{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:12px!important;overflow:hidden!important}
+main>section{display:block;width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 12px!important;overflow:hidden!important}
+.panel{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#localWeatherPanel{container-type:inline-size;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;padding:14px!important}
+#localWeatherPanel .weatherHero{display:flex!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#localWeatherPanel .weatherGrid{display:grid!important;width:100%!important;max-width:100%!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+#localWeatherPanel .weatherMetric{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#localWeatherPanel .weatherMetric .value{font-size:clamp(17px,5vw,22px)!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+#localWeatherPanel .hourlyStrip{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#localWeatherPanel .hourItem{display:block!important;float:none!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;white-space:normal!important;padding:8px 3px!important}
+#localWeatherPanel .row{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#localWeatherPanel .row>*{display:block!important;flex:0 0 auto!important;width:100%!important;max-width:100%!important;min-width:0!important}
+#localWeatherPanel button{white-space:normal!important;overflow-wrap:anywhere!important}
+@media(min-width:700px){
+ main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+ .mapPanel{grid-column:1/-1}
+ #localWeatherPanel .weatherGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #localWeatherPanel .row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #localWeatherPanel .hourlyStrip{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+
 </style>
 </head>
 <body>
@@ -279,7 +305,7 @@ async function loadWeather(lat,lon,label){
   const res=await fetch(url);if(!res.ok)throw Error('Weather service unavailable');const d=await res.json(),c=d.current,day=d.daily;
   const desc=weatherText(c.weather_code);$('weatherIcon').textContent=desc[1];$('weatherTemp').textContent=`${Math.round(c.temperature_2m)}°F`;$('weatherSummary').textContent=desc[0];$('weatherFeels').textContent=`${Math.round(c.apparent_temperature)}°F`;$('weatherHumidity').textContent=`${Math.round(c.relative_humidity_2m)}%`;$('weatherWind').textContent=`${Math.round(c.wind_speed_10m)} / ${Math.round(c.wind_gusts_10m||0)} mph ${compass(c.wind_direction_10m)}`;$('weatherRain').textContent=`${Number(c.precipitation||0).toFixed(2)} in`;$('weatherHighLow').textContent=`${Math.round(day.temperature_2m_max[0])}° / ${Math.round(day.temperature_2m_min[0])}°`;$('weatherSun').textContent=`${localTime(day.sunrise[0])} / ${localTime(day.sunset[0])}`;
   const now=new Date(c.time).getTime();const start=d.hourly.time.findIndex(t=>new Date(t).getTime()>=now);const i0=Math.max(0,start);
-  $('weatherHourly').innerHTML='';d.hourly.time.slice(i0,i0+10).forEach((t,i)=>{const n=i+i0,wx=weatherText(d.hourly.weather_code[n]);const el=document.createElement('div');el.className='hourItem';el.innerHTML=`<span>${localTime(t)}</span><div style="font-size:20px">${wx[1]}</div><strong>${Math.round(d.hourly.temperature_2m[n])}°</strong><span>${Math.round(d.hourly.precipitation_probability[n]||0)}% rain</span>`;$('weatherHourly').appendChild(el)});
+  $('weatherHourly').innerHTML='';$('weatherHourly').style.cssText='display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px;width:100%;max-width:100%;min-width:0;overflow:hidden;box-sizing:border-box';d.hourly.time.slice(i0,i0+8).forEach((t,i)=>{const n=i+i0,wx=weatherText(d.hourly.weather_code[n]);const el=document.createElement('div');el.className='hourItem';el.style.cssText='display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;white-space:normal';el.innerHTML=`<span>${localTime(t)}</span><div style="font-size:20px">${wx[1]}</div><strong>${Math.round(d.hourly.temperature_2m[n])}°</strong><span>${Math.round(d.hourly.precipitation_probability[n]||0)}% rain</span>`;$('weatherHourly').appendChild(el)});
   $('weatherStatus').textContent='Updated '+localTime(c.time);
  }catch(e){$('weatherStatus').textContent='Unavailable';$('weatherSummary').textContent='Could not load weather. Check your connection and try again.'}
 }
