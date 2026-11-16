@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'iso-shell-v130-map-layers';
+const CACHE = 'iso-shell-v131-vector-map-layers';
 const APP_ASSETS = [
   './manifest.webmanifest',
   './logo.png',

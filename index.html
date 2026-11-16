@@ -710,15 +710,15 @@ function weatherAtMap(){const c=map.getCenter();loadWeather(c.lat,c.lng,'Map cen
 function weatherAtGps(){if(!navigator.geolocation){toast('GPS is unavailable');return} $('weatherStatus').textContent='Finding GPS…';navigator.geolocation.getCurrentPosition(pos=>{weatherLocation={lat:pos.coords.latitude,lon:pos.coords.longitude};$('gpsStatus').textContent='GPS active';loadWeather(weatherLocation.lat,weatherLocation.lon,'Your current GPS location')},()=>{toast('Could not get GPS. Showing weather for map center instead.');weatherAtMap()},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
 
 
-// v1.3.0: official NYS map overlays with server-checked Pro entitlement.
+// v1.3.1: draw NYS GIS feature layers as vector features for reliable visibility.
 const mapOverlayLayers = {};
 const mapOverlayConfig = {
-  decLands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[0], pro:false},
-  wma:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[2], pro:false},
-  wmu:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[4], pro:false},
-  parks:    {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer', layers:[3], pro:false},
-  wetlands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/erm/erm_wetlands/MapServer', layers:[0,1], pro:true},
-  easements:{url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[1], pro:true}
+  decLands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[0], pro:false, style:{color:'#ff7a38',weight:2,opacity:1,fillColor:'#ff5a1f',fillOpacity:0.20}},
+  wma:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[2], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#328b4d',fillOpacity:0.28}},
+  wmu:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[4], pro:false, style:{color:'#ff5a1f',weight:2.5,opacity:0.95,fillColor:'#ff5a1f',fillOpacity:0.015}},
+  parks:    {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer', layers:[3], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#d28a38',fillOpacity:0.22}},
+  wetlands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/erm/erm_wetlands/MapServer', layers:[0,1], pro:true, style:{color:'#5bc0eb',weight:1.5,opacity:1,fillColor:'#168bd2',fillOpacity:0.30}},
+  easements:{url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[1], pro:true, style:{color:'#bd8cff',weight:2,opacity:1,fillColor:'#9b59d0',fillOpacity:0.24}}
 };
 function hasProMapAccess(){
   return ['trial','pro_monthly','pro_yearly','tester','admin'].includes(currentMembershipTier);
@@ -748,22 +748,26 @@ function addMapOverlay(key){
     const input=document.querySelector('[data-map-layer="'+key+'"]');if(input)input.checked=false;
     return;
   }
-  if(!window.L||!L.esri||!L.esri.dynamicMapLayer){
-    toast('Map layer service is unavailable. Check your connection.');
-    return;
+  if(!window.L||!L.esri||!L.esri.featureLayer){
+    const status=$('mapLayerStatus');if(status)status.textContent='GIS drawing library did not load. Check your connection and reload the app.';
+    toast('Map layer drawing library is unavailable.');return;
   }
   if(!mapOverlayLayers[key]){
-    mapOverlayLayers[key]=L.esri.dynamicMapLayer({
-      url:cfg.url,layers:cfg.layers,opacity:0.62,useCors:true
+    const group=L.layerGroup();
+    cfg.layers.forEach(layerId=>{
+      const layer=L.esri.featureLayer({
+        url:cfg.url+'/'+layerId,
+        style:()=>cfg.style,
+        simplifyFactor:0.5,
+        precision:5,
+        useCors:true
+      });
+      layer.on('loading',()=>{const status=$('mapLayerStatus');if(status)status.textContent='Loading '+(document.querySelector('[data-map-layer="'+key+'"]')?.closest('.layerRow')?.querySelector('.layerTitle')?.textContent||'map layer')+'…';});
+      layer.on('load',()=>{const status=$('mapLayerStatus');if(status)status.textContent='Map layer loaded. Pan or zoom to explore the boundaries.';});
+      layer.on('requesterror',e=>{const status=$('mapLayerStatus');if(status)status.textContent='NYS GIS request failed for '+key+'. Check signal or try again.';console.warn('In Sight GIS request error',key,e);});
+      group.addLayer(layer);
     });
-    mapOverlayLayers[key].on('requesterror',()=>{
-      const status=$('mapLayerStatus');
-      if(status)status.textContent='A map layer could not load. The official GIS service may be temporarily unavailable.';
-    });
-    mapOverlayLayers[key].on('load',()=>{
-      const status=$('mapLayerStatus');
-      if(status)status.textContent='Map overlays updated from NYS GIS services.';
-    });
+    mapOverlayLayers[key]=group;
   }
   mapOverlayLayers[key].addTo(map);
 }
