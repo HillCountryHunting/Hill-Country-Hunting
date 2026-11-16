@@ -470,7 +470,7 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>In Sight Outdoors · v0.9.2 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v1.2.3 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -831,7 +831,7 @@ loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',r
 $('trackFollow').onclick=()=>{followTrack=!followTrack;$('trackFollow').classList.toggle('active',followTrack);$('trackFollow').setAttribute('aria-pressed',String(followTrack));$('trackFollow').textContent=followTrack?'◎ Follow GPS: ON':'◎ Follow GPS: OFF';if(followTrack&&track.lastFix)map.panTo([track.lastFix.lat,track.lastFix.lon])};
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=122-movement-scope-fix').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=123-network-first-html').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 
 let movementRequest=0;
