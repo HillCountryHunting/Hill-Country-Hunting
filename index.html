@@ -252,6 +252,20 @@ body.mapFullscreenOpen{overflow:hidden!important}
 #mapExpandBtn{order:-2}
 .mapPanel .mapwrap{position:relative}
 
+
+/* v1.3.0 map layer selector */
+.layerPanel{background:#171513;border:1px solid #8a5434;border-radius:14px;padding:12px;margin:8px 0 10px}
+.layerPanelHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.layerPanelTitle{font-weight:900;letter-spacing:1px;color:#ff5a1f;font-size:13px}
+.layerRows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.layerRow{display:flex;align-items:center;gap:8px;background:#11100f;border:1px solid #514236;border-radius:10px;padding:8px;font-size:12px;color:#f2dfbd;min-width:0}
+.layerRow input{width:18px;height:18px;flex:none;accent-color:#ff5a1f}
+.layerRow.locked{opacity:.72}
+.layerRow small{display:block;color:#b7aa98;font-size:10px}
+.layerLegendNote{font-size:11px;color:#b7aa98;margin-top:9px;line-height:1.4}
+.layerStatus{font-size:11px;color:#f2dfbd;margin-top:8px}
+@media(max-width:520px){.layerRows{grid-template-columns:minmax(0,1fr)}}
+
 </style>
 </head>
 <body>
@@ -319,6 +333,24 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <button id="windToggle" class="active">〰 Wind overlay ON</button>
 <select id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
 <button id="refreshWind">↻ Refresh wind</button>
+<button id="mapLayersToggle" type="button" aria-expanded="false">▤ Map layers</button>
+</div>
+<div class="layerPanel" id="mapLayersPanel" hidden>
+  <div class="layerPanelHead">
+    <div class="layerPanelTitle">HUNTING LAND & HABITAT</div>
+    <span class="pill">Official GIS data</span>
+  </div>
+  <div class="layerRows">
+    <label class="layerRow"><input type="checkbox" data-map-layer="decLands"><span>DEC State Lands<small>State forests, Forest Preserve & DEC tracts</small></span></label>
+    <label class="layerRow"><input type="checkbox" data-map-layer="wma"><span>Wildlife Management Areas<small>Official NYSDEC WMA boundaries</small></span></label>
+    <label class="layerRow"><input type="checkbox" data-map-layer="wmu"><span>Wildlife Management Units<small>Hunting unit boundaries</small></span></label>
+    <label class="layerRow"><input type="checkbox" data-map-layer="parks"><span>State Parks<small>Official NYS reference boundaries</small></span></label>
+    <label class="layerRow locked"><input type="checkbox" data-map-layer="wetlands" data-pro="true"><span>Wetlands <small>PRO · NYSDEC mapped wetlands</small></span></label>
+    <label class="layerRow locked"><input type="checkbox" data-map-layer="easements" data-pro="true"><span>Conservation Easements <small>PRO · Access is not implied</small></span></label>
+  </div>
+  <div class="layerLegendNote">Public-land boundaries are reference information, not a guarantee that a particular activity or access route is permitted. Always verify current DEC rules and posted restrictions. Wetland mapping is informational and may be incomplete.</div>
+  <div class="layerStatus" id="mapLayerStatus" aria-live="polite">Layers load from official New York State GIS services. Internet connection required.</div>
+  <div class="layerLegendNote"><strong>Crop identification:</strong> USDA Cropland Data Layer integration is being prepared separately; crop classifications are annual estimates, not live field conditions.</div>
 </div>
 <div class="mapwrap" id="mapWrap"><div id="map"></div><canvas id="windCanvas"></canvas></div>
 
@@ -470,10 +502,11 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>In Sight Outdoors · v1.2.3 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v1.3.0 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.15/dist/esri-leaflet.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -676,6 +709,82 @@ async function loadWeather(lat,lon,label){
 function weatherAtMap(){const c=map.getCenter();loadWeather(c.lat,c.lng,'Map center')}
 function weatherAtGps(){if(!navigator.geolocation){toast('GPS is unavailable');return} $('weatherStatus').textContent='Finding GPS…';navigator.geolocation.getCurrentPosition(pos=>{weatherLocation={lat:pos.coords.latitude,lon:pos.coords.longitude};$('gpsStatus').textContent='GPS active';loadWeather(weatherLocation.lat,weatherLocation.lon,'Your current GPS location')},()=>{toast('Could not get GPS. Showing weather for map center instead.');weatherAtMap()},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
 
+
+// v1.3.0: official NYS map overlays with server-checked Pro entitlement.
+const mapOverlayLayers = {};
+const mapOverlayConfig = {
+  decLands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[0], pro:false},
+  wma:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[2], pro:false},
+  wmu:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[4], pro:false},
+  parks:    {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer', layers:[3], pro:false},
+  wetlands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/erm/erm_wetlands/MapServer', layers:[0,1], pro:true},
+  easements:{url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[1], pro:true}
+};
+function hasProMapAccess(){
+  return ['trial','pro_monthly','pro_yearly','tester','admin'].includes(currentMembershipTier);
+}
+function updateMapLayerEntitlements(){
+  document.querySelectorAll('[data-map-layer]').forEach(input=>{
+    const cfg=mapOverlayConfig[input.dataset.mapLayer];
+    const locked=!!(cfg&&cfg.pro&&!hasProMapAccess());
+    input.disabled=locked;
+    const row=input.closest('.layerRow');
+    if(row)row.classList.toggle('locked',locked);
+    if(locked&&input.checked){input.checked=false;removeMapOverlay(input.dataset.mapLayer);}
+  });
+  const status=$('mapLayerStatus');
+  if(status)status.textContent=hasProMapAccess()
+    ? 'Pro map layers unlocked for your membership.'
+    : 'Free public-land layers are available. Wetlands and conservation easements are Pro.';
+}
+function removeMapOverlay(key){
+  if(mapOverlayLayers[key]&&map.hasLayer(mapOverlayLayers[key]))map.removeLayer(mapOverlayLayers[key]);
+}
+function addMapOverlay(key){
+  const cfg=mapOverlayConfig[key];
+  if(!cfg||!map)return;
+  if(cfg.pro&&!hasProMapAccess()){
+    toast('This habitat layer is part of In Sight Pro.');
+    const input=document.querySelector('[data-map-layer="'+key+'"]');if(input)input.checked=false;
+    return;
+  }
+  if(!window.L||!L.esri||!L.esri.dynamicMapLayer){
+    toast('Map layer service is unavailable. Check your connection.');
+    return;
+  }
+  if(!mapOverlayLayers[key]){
+    mapOverlayLayers[key]=L.esri.dynamicMapLayer({
+      url:cfg.url,layers:cfg.layers,opacity:0.62,useCors:true
+    });
+    mapOverlayLayers[key].on('requesterror',()=>{
+      const status=$('mapLayerStatus');
+      if(status)status.textContent='A map layer could not load. The official GIS service may be temporarily unavailable.';
+    });
+    mapOverlayLayers[key].on('load',()=>{
+      const status=$('mapLayerStatus');
+      if(status)status.textContent='Map overlays updated from NYS GIS services.';
+    });
+  }
+  mapOverlayLayers[key].addTo(map);
+}
+function initMapLayerControls(){
+  const panel=$('mapLayersPanel'),toggle=$('mapLayersToggle');
+  if(toggle&&panel){
+    toggle.addEventListener('click',()=>{
+      panel.hidden=!panel.hidden;
+      toggle.setAttribute('aria-expanded',String(!panel.hidden));
+      toggle.textContent=panel.hidden?'▤ Map layers':'▤ Hide layers';
+    });
+  }
+  document.querySelectorAll('[data-map-layer]').forEach(input=>{
+    input.addEventListener('change',()=>{
+      if(input.checked)addMapOverlay(input.dataset.mapLayer);
+      else removeMapOverlay(input.dataset.mapLayer);
+    });
+  });
+  updateMapLayerEntitlements();
+}
+
 function initMap(){map=L.map('map',{zoomControl:true}).setView([43.05,-75.85],12);$('map').appendChild($('windCanvas'));baseLayers.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19});baseLayers.topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17});baseLayers.street=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});baseLayers.sat.addTo(map);map.on('click',e=>addStand(e.latlng.lat,e.latlng.lng));map.on('moveend',()=>{if(Date.now()-lastWindFetch>120000){lastWindFetch=Date.now();refreshOverlay()}});setTimeout(()=>{map.invalidateSize();resizeCanvas();refreshOverlay()},250);new ResizeObserver(()=>{resizeCanvas()}).observe($('mapWrap'))}
 $('savePending').onclick=savePending;$('weatherLocate').onclick=weatherAtGps;$('weatherMapCenter').onclick=weatherAtMap;$('weatherRefresh').onclick=()=>{if(weatherLocation)loadWeather(weatherLocation.lat,weatherLocation.lon,'Your current GPS location');else if(lastWeatherRequest)loadWeather(lastWeatherRequest.lat,lastWeatherRequest.lon,lastWeatherRequest.label);else weatherAtMap()};
 $('gpsBtn').onclick=()=>{if(!navigator.geolocation){toast('GPS is not available in this browser');return}navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,16);$('gpsStatus').textContent='GPS active';L.circleMarker(ll,{radius:7,color:'#fff',fillColor:'#2686ff',fillOpacity:1}).addTo(map).bindTooltip('Your location')},e=>toast('Could not get GPS location. Check browser permissions.'),{enableHighAccuracy:true,timeout:12000})};
@@ -692,7 +801,7 @@ $('backupReminder').onclick=()=>toast('Export a backup before clearing browser d
 // The publishable key is designed for browser use; never place a service_role key here.
 const SUPABASE_URL='https://ucczvmziiqfmsutckcja.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HRjnfXJq9BqWQJpLXKR4jw_dCdHPSqd';
-let authClient=null, currentAuthUser=null;
+let authClient=null, currentAuthUser=null, currentMembershipTier='free';
 function accountNotice(message,kind=''){
   const el=$('accountNotice'); if(!el)return;
   el.textContent=message; el.className='accountNotice'+(kind?' '+kind:'');
@@ -700,6 +809,7 @@ function accountNotice(message,kind=''){
 function accountRedirectUrl(){return window.location.origin+window.location.pathname}
 function showSignedIn(user){
   currentAuthUser=user||null;
+  if(!user){currentMembershipTier='free';updateMapLayerEntitlements();}
   $('accountSignedOut').hidden=!!user;
   $('accountSignedIn').hidden=!user;
   $('accountTier').textContent=user?'Account active':'Not signed in';
@@ -722,6 +832,8 @@ async function refreshMembership(){
       return;
     }
     const tier=m.effective_tier||m.access_tier||'free';
+    currentMembershipTier=tier;
+    updateMapLayerEntitlements();
     const names={trial:'30-day Pro trial',free:'Free',pro_monthly:'Pro monthly',pro_yearly:'Pro yearly',tester:'Field tester',admin:'Administrator'};
     $('accountTierDetail').textContent=names[tier]||tier;
     $('accountTrialDates').textContent=tier==='trial'
@@ -826,12 +938,12 @@ $('accountSignOut').onclick=async()=>{
 };
 
 initAccount();
-load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
+load();loadTrack();initMap();initMapLayerControls();renderStands();drawTrack();renderTrack();
 loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',renderBookmarks);$('bookmarkFilter').addEventListener('change',renderBookmarks);$('bookmarkSave').onclick=saveBookmark;$('bookmarkCancel').onclick=resetBookmarkForm;
 $('trackFollow').onclick=()=>{followTrack=!followTrack;$('trackFollow').classList.toggle('active',followTrack);$('trackFollow').setAttribute('aria-pressed',String(followTrack));$('trackFollow').textContent=followTrack?'◎ Follow GPS: ON':'◎ Follow GPS: OFF';if(followTrack&&track.lastFix)map.panTo([track.lastFix.lat,track.lastFix.lon])};
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=123-network-first-html').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=130-map-layers').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 
 let movementRequest=0;
