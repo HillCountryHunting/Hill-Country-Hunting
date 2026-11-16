@@ -139,6 +139,111 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 .accountNotice.error{border-color:#a84b37;color:#ffd2c8}
 .accountNotice.success{border-color:#557b50;color:#d7edcf}
 
+
+/* v1.0 dashboard preview: map-first responsive hunting workspace */
+:root{--dash-gap:12px}
+body{max-width:1500px!important;margin:0 auto!important;padding:12px!important}
+.brandHeader{position:sticky;top:0;z-index:1000;background:rgba(15,15,14,.96);backdrop-filter:blur(12px);padding:10px 4px!important}
+.accountPanel{margin:8px 0 12px!important}
+.dashboardDock{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;position:sticky;top:70px;z-index:900;padding:8px 0;background:rgba(15,15,14,.94);backdrop-filter:blur(10px)}
+.dashboardDock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;padding:7px 3px;border:1px solid #514333;border-radius:12px;background:#211d19;color:#f2dfbd;font-size:11px;font-weight:800}
+.dashboardDock button span{font-size:20px;color:#ff5a1f;line-height:1}
+.dashboardMain{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.85fr);grid-template-areas:"map weather" "map waypoints" "tracker thermals" "bookmarks photo" "details wind" "misc misc";gap:var(--dash-gap);align-items:start;margin-top:8px}
+.dashboardMain>.panel,.dashboardMain>section{margin:0!important;min-width:0}
+.dashboardMain .mapPanel{grid-area:map;position:sticky;top:150px}
+#localWeatherPanel{grid-area:weather}
+#trackerPanel{grid-area:tracker}
+#fieldResourcesPanel{grid-area:bookmarks}
+.dashboardMain>section:nth-of-type(5){grid-area:waypoints}
+.dashboardMain>section:nth-of-type(6){grid-area:details}
+.dashboardMain>section:nth-of-type(7){grid-area:wind}
+.dashboardMain>section:nth-of-type(8){grid-area:photo}
+.dashboardMain>section:nth-of-type(9){grid-area:misc}
+.mapwrap{height:min(68vh,760px)!important;min-height:420px!important}
+.mapPanel h2{display:flex;align-items:center;justify-content:space-between}
+.dashboardMain .panel{padding:14px!important}
+.dashboardMain .panel h2{font-size:16px!important}
+.dashboardMain .hint{font-size:11px}
+.dashboardMain input,.dashboardMain select,.dashboardMain textarea{max-width:100%}
+.dashboardMain img{object-fit:contain}
+#standList{max-height:250px;overflow:auto}
+#bookmarkList{max-height:250px;overflow:auto}
+#thermalHourly{max-height:280px;overflow:auto}
+.dashboardMain footer{grid-column:1/-1}
+@media(max-width:850px){
+ body{padding:8px!important}
+ .dashboardDock{top:62px;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .dashboardMain{grid-template-columns:minmax(0,1fr);grid-template-areas:"map" "weather" "waypoints" "details" "wind" "thermals" "tracker" "bookmarks" "photo" "misc"}
+ .dashboardMain .mapPanel{position:relative;top:auto}
+ .mapwrap{height:52vh!important;min-height:340px!important}
+}
+@media(min-width:851px){
+ .dashboardMain .mapPanel{max-height:calc(100vh - 165px);overflow:auto}
+}
+
+
+/* v1.1 popup dashboard: map stays home, tools open as focused panels */
+.dashboardDock{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-width:760px;margin:10px auto 12px;padding:10px;background:rgba(20,18,16,.96);border:1px solid #514333;border-radius:18px;position:relative;top:auto;z-index:10}
+.dashboardDock button{min-height:66px;border:1px solid #554332;border-radius:13px;background:linear-gradient(145deg,#2b241e,#171513);color:#f2dfbd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:7px 3px;font-weight:800}
+.dashboardDock button span{font-size:25px;color:#ff5a1f;line-height:1}
+.dashboardDock button small{font-size:10px;letter-spacing:.3px}
+.dashboardDock button:active{transform:scale(.97);border-color:#ff5a1f}
+.dashboardMain{display:block!important;max-width:1180px;margin:0 auto!important}
+.dashboardMain .mapPanel{width:100%;max-width:100%;margin:0!important;position:relative!important;top:auto!important}
+.dashboardMain .mapwrap{height:min(64vh,700px)!important;min-height:380px!important}
+.dashboardMain>section:not(.mapPanel){display:none!important}
+.toolPopupShade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:3000;align-items:center;justify-content:center;padding:14px}
+.toolPopupShade.open{display:flex}
+.toolPopupCard{position:relative;width:min(760px,100%);max-height:min(88vh,900px);overflow:auto;background:#171513;border:1px solid #8c5837;border-radius:18px;padding:18px;box-shadow:0 20px 70px #000b}
+.toolPopupCard>section{display:block!important;width:100%!important;max-width:100%!important;margin:0!important}
+.toolPopupClose{position:sticky;top:0;float:right;z-index:5;border:1px solid #76543b;background:#2b211a;color:#f2dfbd;border-radius:50%;width:38px;height:38px;font-size:21px;font-weight:900}
+.toolPopupTitle{color:#ff5a1f;font-size:11px;letter-spacing:1.7px;font-weight:900;margin:3px 0 12px}
+body.popupOpen{overflow:hidden}
+@media(min-width:850px){
+ .dashboardDock{grid-template-columns:repeat(8,minmax(0,1fr));max-width:1100px}
+ .dashboardDock button{min-height:76px}
+ .dashboardMain .mapwrap{height:min(68vh,760px)!important}
+}
+@media(max-width:520px){
+ .dashboardDock{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px}
+ .dashboardDock button{min-height:60px}
+ .dashboardDock button span{font-size:22px}
+ .dashboardMain .mapwrap{height:54vh!important;min-height:330px!important}
+ .toolPopupShade{padding:7px}
+ .toolPopupCard{max-height:92vh;padding:12px;border-radius:14px}
+}
+
+
+/* Full-screen map mode */
+.mapPanel.mapFullscreen{position:fixed!important;inset:0!important;z-index:5000!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:10px!important;border-radius:0!important;overflow:auto!important;background:#11100f!important}
+.mapPanel.mapFullscreen h2{margin-top:0}
+.mapPanel.mapFullscreen .mapwrap{height:calc(100dvh - 190px)!important;min-height:250px!important}
+.mapPanel.mapFullscreen .maptools{position:relative;z-index:5002}
+.mapPanel.mapFullscreen #map{height:100%!important}
+body.mapFullscreenOpen{overflow:hidden!important}
+.mapPanel.mapFullscreen #mapExpandBtn{border-color:#ff5a1f;background:#ff5a1f;color:#171513;font-weight:900}
+@media(max-width:600px){
+ .mapPanel.mapFullscreen{padding:8px!important}
+ .mapPanel.mapFullscreen .mapwrap{height:calc(100dvh - 210px)!important;min-height:230px!important}
+ .mapPanel.mapFullscreen .hint{font-size:10px}
+}
+
+
+.movementDays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.movementDay{background:#11100f;border:1px solid var(--line);border-radius:13px;padding:11px;min-width:0}
+.movementDay .dayName{font-weight:900;color:var(--cream);font-size:14px}
+.movementScore{font-size:27px;font-weight:900;color:#ff8a43;margin:5px 0}
+.movementBand{font-size:12px;color:var(--gold);font-weight:800}
+.movementMeta{font-size:11px;color:var(--muted);line-height:1.45;margin-top:6px}
+#trackFollow.active{border-color:#ff5a1f;color:#ffb17e}
+@media(min-width:700px){.movementDays{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Insight is a full-width third-row dashboard tile */
+.dashboardDock button[data-open="deerMovementPanel"]{grid-column:1/-1;min-height:62px;flex-direction:row;gap:12px}
+.dashboardDock button[data-open="deerMovementPanel"] span{font-size:25px}
+.dashboardDock button[data-open="deerMovementPanel"] small{font-size:13px}
+
 </style>
 </head>
 <body>
@@ -185,11 +290,24 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
   <div id="accountNotice" class="accountNotice" role="status" aria-live="polite">Account services connect securely to Supabase. Your hunting data remains on this device for now.</div>
 </section>
 
-<main>
+
+<nav class="dashboardDock" aria-label="Hunting tools">
+  <button type="button" data-open="localWeatherPanel" aria-label="Weather"><span>☀</span><small>Weather</small></button>
+  <button type="button" data-open="windPanel" aria-label="Wind"><span>〰</span><small>Wind</small></button>
+  <button type="button" data-open="thermalPanel" aria-label="Thermals"><span>♨</span><small>Thermals</small></button>
+  <button type="button" data-open="waypointPanel" aria-label="Waypoints"><span>⌖</span><small>Waypoints</small></button>
+  <button type="button" data-open="fieldResourcesPanel" aria-label="Bookmarks"><span>▣</span><small>Bookmarks</small></button>
+  <button type="button" data-open="trackerPanel" aria-label="Woods tracker"><span>⌁</span><small>Tracker</small></button>
+  <button type="button" data-open="photoPanel" aria-label="AI field assistant"><span>✦</span><small>AI Assistant</small></button>
+  <button type="button" data-open="propertyPanel" aria-label="Property and maps"><span>▤</span><small>Maps</small></button>
+<button type="button" data-open="deerMovementPanel" aria-label="Insight"><span>🦌</span><small>Insight</small></button>
+</nav>
+<main class="dashboardMain">
 <section class="panel mapPanel">
 <h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
 <div class="mapwrap" id="mapWrap"><div id="map"></div><canvas id="windCanvas"></canvas></div>
 <div class="maptools">
+<button id="mapExpandBtn" type="button" aria-pressed="false">⛶ Full screen map</button>
 <button id="gpsBtn">◎ My location</button>
 <button id="windToggle" class="active">〰 Wind overlay ON</button>
 <select id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
@@ -264,7 +382,7 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 
 <section class="panel" id="trackerPanel">
 <h2>Woods tracker <span class="pill" id="trackStatus">Not tracking</span></h2>
-<p class="muted">Record your route into the woods and use the saved breadcrumb trail to retrace your way out.</p>
+<p class="muted">Record a live GPS breadcrumb trail. Your path is drawn in orange on the map so you can retrace it back out.</p>
 <div class="row">
 <button class="primary" id="trackStart">▶ Start tracking</button>
 <button id="trackPause" disabled>Ⅱ Pause</button>
@@ -276,12 +394,13 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 </div>
 <div class="row" style="margin-top:10px">
 <button id="returnStart" disabled>⌖ Return to start</button>
+<button id="trackFollow" type="button" class="active" aria-pressed="true">◎ Follow GPS: ON</button>
 <button id="clearTrack" class="danger">Clear track</button>
 </div>
 <div class="hint" id="trackHint">GPS permission is required. Keep this app open while tracking; browser background tracking is not guaranteed.</div>
 </section>
 
-<section class="panel">
+<section class="panel" id="waypointPanel">
 <h2>Your hunting waypoints</h2>
 <label for="standName">Stand / waypoint name</label><input id="standName" placeholder="e.g. North Ridge">
 <div class="row"><select id="standType"><option>Tree stand</option><option>Saddle setup</option><option>Ground blind</option><option>Trail camera</option><option>Scrape</option><option>Food source</option><option>Access point</option><option>Other</option></select><button class="primary" id="savePending">Save map pin</button></div>
@@ -304,7 +423,7 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 </div>
 </section>
 
-<section class="panel">
+<section class="panel" id="thermalPanel">
 <h2>Local wind conditions</h2>
 <div id="selectedWind" class="muted">Select a waypoint to see its forecast.</div>
 <div id="windHistory" class="small" style="margin-top:10px"></div>
@@ -317,13 +436,22 @@ main>section{display:block;width:100%!important;max-width:100%!important;min-wid
 <div class="hint">Wind forecasts come from Open-Meteo at the selected stand coordinates. Hills, valleys, canopy and thermals can change actual stand-level wind.</div>
 </section>
 
-<section class="panel">
+<section class="panel" id="photoPanel">
 <h2>Field photo assistant</h2>
 <p class="muted">Choose a photo of tracks, scat, a plant, tree or other field sign. The app can preview it and prepare it for AI identification; AI analysis is not connected in this version.</p>
 <input id="fieldPhoto" type="file" accept="image/*" capture="environment">
 <img id="fieldPreview" alt="Field photo preview" style="display:none;max-width:100%;max-height:220px;border-radius:12px;margin-top:10px">
 <textarea id="fieldQuestion" placeholder="What would you like help identifying? e.g. deer track, scat, plant..."></textarea>
 <button id="copyFieldPrompt">Copy identification prompt</button>
+</section>
+
+<section class="panel" id="deerMovementPanel">
+<h2>Insight <span class="pill" id="movementStatus">Choose a location</span></h2>
+<p class="muted">A daily weather-and-season activity outlook for your hunting area. This is an estimate, not a measured or statistically validated probability of seeing a deer.</p>
+<div class="row"><button class="primary" id="movementUseGps">◎ Use my GPS location</button><button id="movementUseWaypoint">⌖ Use selected waypoint</button></div>
+<div id="movementLocation" class="hint" style="margin-top:8px">Choose GPS or a saved waypoint to calculate the outlook.</div>
+<div id="movementDays" class="movementDays"></div>
+<div class="hint">The 0–100 score is an activity-favorability index, not a true chance of a sighting. Local deer density, hunting pressure, food, cover, terrain and disturbance can change actual movement substantially.</div>
 </section>
 
 <section class="panel">
@@ -344,6 +472,7 @@ const brandTagline=document.getElementById('brandTagline');if(brandTagline)brand
 const STORE='hch_waypoints_v3', OLD='hch_waypoints_v2';
 let stands=[], selectedId=null, pendingPoint=null, windData=null, windOn=true, particles=[], animFrame=0, lastWindFetch=0, map, baseLayers={};
 let track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null}, trackWatch=null, trackLine=null, returnLine=null, startMarker=null, currentMarker=null, trackTick=null;
+let followTrack=true;
 const TRACK_STORE='iso_track_v1';
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2600)}
@@ -503,6 +632,7 @@ function acceptFix(pos){const p={lat:pos.coords.latitude,lon:pos.coords.longitud
  if(track.status==='recording'){const last=track.points[track.points.length-1];if(!last||distanceM(last,p)>=4){track.points.push(p);saveTrack();drawTrack()}}
  if(!currentMarker){currentMarker=L.circleMarker([p.lat,p.lon],{radius:7,color:'#fff',weight:2,fillColor:'#2686ff',fillOpacity:1}).addTo(map).bindTooltip('Current location')}
  else currentMarker.setLatLng([p.lat,p.lon]);
+ if(track.status==='recording'&&followTrack){map.panTo([p.lat,p.lon],{animate:true,duration:.35});}
  renderTrack();
 }
 function gpsError(e){toast(e.code===1?'Location permission denied. Allow location in Chrome.':'GPS signal unavailable. Move to a clearer area.')}
@@ -512,7 +642,7 @@ function startTrack(){if(!navigator.geolocation){toast('GPS is unavailable');ret
 }
 function pauseTrack(){if(track.status==='recording'){track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='paused';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack()}}
 function finishTrack(){if(track.status==='recording')track.elapsedBefore=elapsedNow();track.startedAt=null;track.status='finished';if(trackWatch!==null)navigator.geolocation.clearWatch(trackWatch);trackWatch=null;saveTrack();renderTrack();toast('Track saved on this device')}
-function returnToStart(){if(track.points.length<2)return;const start=track.points[0],last=track.points[track.points.length-1];if(returnLine)map.removeLayer(returnLine);returnLine=L.polyline([[last.lat,last.lon],[start.lat,start.lon]],{color:'#f2dfbd',weight:4,dashArray:'8 9',opacity:.95}).addTo(map);map.fitBounds(trackLine?trackLine.getBounds():returnLine.getBounds(),{padding:[35,35]});const d=distanceM(last,start);toast(`Start is approximately ${(d/1609.344).toFixed(2)} miles from your last recorded point`)}
+function returnToStart(){if(track.points.length<2)return;if(returnLine){map.removeLayer(returnLine);returnLine=null}map.fitBounds(trackLine.getBounds(),{padding:[35,35]});toast(`Follow your orange breadcrumb trail backward. Your recorded route is ${(trackDistance()/1609.344).toFixed(2)} miles long.`)}
 function clearTrack(){if(track.status==='recording'){toast('Pause or finish tracking before clearing');return}if(!confirm('Clear the recorded breadcrumb track?'))return;track={status:'idle',points:[],startedAt:null,elapsedBefore:0,lastFix:null};saveTrack();drawTrack();renderTrack()}
 
 
@@ -689,10 +819,88 @@ $('accountSignOut').onclick=async()=>{
 initAccount();
 load();loadTrack();initMap();renderStands();drawTrack();renderTrack();
 loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',renderBookmarks);$('bookmarkFilter').addEventListener('change',renderBookmarks);$('bookmarkSave').onclick=saveBookmark;$('bookmarkCancel').onclick=resetBookmarkForm;
+$('trackFollow').onclick=()=>{followTrack=!followTrack;$('trackFollow').classList.toggle('active',followTrack);$('trackFollow').setAttribute('aria-pressed',String(followTrack));$('trackFollow').textContent=followTrack?'◎ Follow GPS: ON':'◎ Follow GPS: OFF';if(followTrack&&track.lastFix)map.panTo([track.lastFix.lat,track.lastFix.lon])};
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=091-waypoints-thermals').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=121-insight-fullrow').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 })();
 </script>
+
+<script>
+document.addEventListener('click',function(e){
+ const b=e.target.closest('[data-jump]');
+ if(!b)return;
+ const target=document.getElementById(b.dataset.jump);
+ if(target){target.scrollIntoView({behavior:'smooth',block:'start'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+});
+</script>
+
+
+<script>
+(function(){
+ const shade=document.createElement('div');
+ shade.className='toolPopupShade';
+ shade.id='toolPopupShade';
+ shade.innerHTML='<div class="toolPopupCard" role="dialog" aria-modal="true" aria-label="Hunting tool"><button class="toolPopupClose" type="button" aria-label="Close">×</button><div class="toolPopupTitle">IN SIGHT OUTDOORS · FIELD TOOL</div><div class="toolPopupBody"></div></div>';
+ document.body.appendChild(shade);
+ const body=shade.querySelector('.toolPopupBody');
+ const close=()=>{const s=shade.querySelector('[data-current-section]');if(s){s.removeAttribute('data-current-section');document.querySelector('.dashboardMain').appendChild(s);s.style.display='none';}shade.classList.remove('open');document.body.classList.remove('popupOpen');};
+ shade.querySelector('.toolPopupClose').addEventListener('click',close);
+ shade.addEventListener('click',e=>{if(e.target===shade)close();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+ document.addEventListener('click',e=>{
+   const b=e.target.closest('[data-open]');
+   if(!b)return;
+   const id=b.getAttribute('data-open');
+   const section=document.getElementById(id);
+   if(!section)return;
+   close();
+   section.setAttribute('data-current-section','1');
+   section.style.display='block';
+   body.appendChild(section);
+   shade.classList.add('open');
+   document.body.classList.add('popupOpen');
+   shade.querySelector('.toolPopupCard').scrollTop=0;
+ });
+})();
+</script>
+
+
+<script>
+(function(){
+ const panel=document.querySelector('.mapPanel');
+ const btn=document.getElementById('mapExpandBtn');
+ if(!panel||!btn)return;
+ let expanded=false;
+ function resizeMap(){
+   setTimeout(function(){
+     if(window.map && typeof window.map.invalidateSize==='function')window.map.invalidateSize({pan:false});
+     if(typeof map!=='undefined' && map && typeof map.invalidateSize==='function')map.invalidateSize({pan:false});
+   },180);
+ }
+ function setExpanded(value){
+   expanded=value;
+   panel.classList.toggle('mapFullscreen',expanded);
+   document.body.classList.toggle('mapFullscreenOpen',expanded);
+   btn.setAttribute('aria-pressed',String(expanded));
+   btn.textContent=expanded?'↙ Exit full screen':'⛶ Full screen map';
+   resizeMap();
+ }
+ btn.addEventListener('click',function(){setExpanded(!expanded);});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&expanded)setExpanded(false);});
+ window.addEventListener('orientationchange',resizeMap);
+ window.addEventListener('resize',resizeMap);
+})();
+</script>
+
+
+let movementRequest=0;
+function movementBand(score){return score>=78?'Very favorable':score>=62?'Favorable':score>=45?'Mixed':score>=28?'Less favorable':'Unfavorable'}
+function moonIllumination(date){const synodic=29.530588853,known=Date.UTC(2000,0,6,18,14);const age=((date.getTime()-known)/86400000%synodic+synodic)%synodic;return Math.round((1-Math.cos(2*Math.PI*age/synodic))/2*100)}
+function movementScore(d,i){let score=48;const wind=Number(d.wind_speed_10m_max[i]||0),rain=Number(d.precipitation_sum[i]||0),high=Number(d.temperature_2m_max[i]||50),low=Number(d.temperature_2m_min[i]||35),sun=Number(d.sunshine_duration[i]||0)/3600,moon=moonIllumination(new Date(d.time[i]+'T12:00:00'));if(wind<=5)score+=8;else if(wind<=10)score+=5;else if(wind<=15)score-=4;else score-=10;if(rain>.35)score-=7;else if(rain>.05)score-=2;const mean=(high+low)/2;if(mean>=35&&mean<=58)score+=8;else if(mean>=25&&mean<35)score+=4;else if(mean>70)score-=5;if(sun>=4&&sun<=8)score+=4;else if(sun<1)score-=2;if(moon>=35&&moon<=75)score+=2;return {score:Math.max(10,Math.min(95,Math.round(score))),wind,rain,high,low,sun,moon}}
+async function loadMovement(lat,lon,label){const req=++movementRequest;$('movementStatus').textContent='Calculating…';$('movementLocation').textContent='Forecast area: '+label;$('movementDays').innerHTML='<p class="muted">Loading the 7-day outlook…</p>';try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunshine_duration&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_days=7&timezone=auto`;const res=await fetch(url);if(!res.ok)throw Error('Forecast unavailable');const data=await res.json();if(req!==movementRequest)return;const d=data.daily;$('movementDays').innerHTML='';d.time.forEach((date,i)=>{const x=movementScore(d,i),name=new Date(date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'}),card=document.createElement('div');card.className='movementDay';card.innerHTML=`<div class="dayName">${name}</div><div class="movementScore">${x.score}<span style="font-size:12px;color:var(--muted)"> / 100</span></div><div class="movementBand">${movementBand(x.score)}</div><div class="movementMeta">High / low: ${Math.round(x.high)}° / ${Math.round(x.low)}°F<br>Peak wind: ${Math.round(x.wind)} mph<br>Rain: ${x.rain.toFixed(2)} in<br>Sun: ${x.sun.toFixed(1)} hrs<br>Moon illumination: ${x.moon}%</div>`;$('movementDays').appendChild(card)});$('movementStatus').textContent='7-day outlook ready'}catch(e){if(req===movementRequest){$('movementStatus').textContent='Unavailable';$('movementDays').textContent='Could not load forecast. Check your connection and try again.'}}}
+$('movementUseGps').onclick=()=>{if(!navigator.geolocation){toast('GPS is unavailable');return}navigator.geolocation.getCurrentPosition(pos=>loadMovement(pos.coords.latitude,pos.coords.longitude,'Current GPS location'),()=>toast('Could not get GPS location. Check browser permissions.'),{enableHighAccuracy:true,timeout:12000})};
+$('movementUseWaypoint').onclick=()=>{const s=stands.find(x=>x.id===selectedId);if(!s){toast('Select a saved waypoint first');return}loadMovement(s.lat,s.lon,s.name)};
+
 </body></html>
