@@ -244,6 +244,14 @@ body.mapFullscreenOpen{overflow:hidden!important}
 .dashboardDock button[data-open="deerMovementPanel"] span{font-size:25px}
 .dashboardDock button[data-open="deerMovementPanel"] small{font-size:13px}
 
+
+/* v1.2.2 repair: map controls above map, GPS easy to find */
+.mapPanel .maptools{display:flex!important;flex-wrap:wrap;gap:7px;margin:10px 0 12px;position:relative;z-index:20}
+.mapPanel .maptools button,.mapPanel .maptools select{min-height:42px}
+#gpsBtn{background:#ff5a1f!important;color:#171513!important;border-color:#ff5a1f!important;font-weight:900!important;order:-1}
+#mapExpandBtn{order:-2}
+.mapPanel .mapwrap{position:relative}
+
 </style>
 </head>
 <body>
@@ -305,7 +313,6 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <main class="dashboardMain">
 <section class="panel mapPanel">
 <h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
-<div class="mapwrap" id="mapWrap"><div id="map"></div><canvas id="windCanvas"></canvas></div>
 <div class="maptools">
 <button id="mapExpandBtn" type="button" aria-pressed="false">⛶ Full screen map</button>
 <button id="gpsBtn">◎ My location</button>
@@ -313,6 +320,8 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <select id="layerSelect" aria-label="Map layer"><option value="sat">Satellite</option><option value="topo">Topographic</option><option value="street">Street</option></select>
 <button id="refreshWind">↻ Refresh wind</button>
 </div>
+<div class="mapwrap" id="mapWrap"><div id="map"></div><canvas id="windCanvas"></canvas></div>
+
 <div class="legend"><span><i class="dot" style="background:#f1d18a"></i>Light wind</span><span><i class="dot" style="background:#8dc7a0"></i>Moderate</span><span><i class="dot" style="background:#e18b73"></i>Strong</span></div>
 <div class="hint">Tap the map to add a stand or waypoint. Animated flow shows the forecast wind direction over the map. It is a model-based estimate, not a live sensor or a terrain-resolved wind measurement.</div>
 </section>
@@ -895,6 +904,7 @@ document.addEventListener('click',function(e){
 </script>
 
 
+<script>
 let movementRequest=0;
 function movementBand(score){return score>=78?'Very favorable':score>=62?'Favorable':score>=45?'Mixed':score>=28?'Less favorable':'Unfavorable'}
 function moonIllumination(date){const synodic=29.530588853,known=Date.UTC(2000,0,6,18,14);const age=((date.getTime()-known)/86400000%synodic+synodic)%synodic;return Math.round((1-Math.cos(2*Math.PI*age/synodic))/2*100)}
@@ -902,5 +912,5 @@ function movementScore(d,i){let score=48;const wind=Number(d.wind_speed_10m_max[
 async function loadMovement(lat,lon,label){const req=++movementRequest;$('movementStatus').textContent='Calculating…';$('movementLocation').textContent='Forecast area: '+label;$('movementDays').innerHTML='<p class="muted">Loading the 7-day outlook…</p>';try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunshine_duration&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_days=7&timezone=auto`;const res=await fetch(url);if(!res.ok)throw Error('Forecast unavailable');const data=await res.json();if(req!==movementRequest)return;const d=data.daily;$('movementDays').innerHTML='';d.time.forEach((date,i)=>{const x=movementScore(d,i),name=new Date(date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'}),card=document.createElement('div');card.className='movementDay';card.innerHTML=`<div class="dayName">${name}</div><div class="movementScore">${x.score}<span style="font-size:12px;color:var(--muted)"> / 100</span></div><div class="movementBand">${movementBand(x.score)}</div><div class="movementMeta">High / low: ${Math.round(x.high)}° / ${Math.round(x.low)}°F<br>Peak wind: ${Math.round(x.wind)} mph<br>Rain: ${x.rain.toFixed(2)} in<br>Sun: ${x.sun.toFixed(1)} hrs<br>Moon illumination: ${x.moon}%</div>`;$('movementDays').appendChild(card)});$('movementStatus').textContent='7-day outlook ready'}catch(e){if(req===movementRequest){$('movementStatus').textContent='Unavailable';$('movementDays').textContent='Could not load forecast. Check your connection and try again.'}}}
 $('movementUseGps').onclick=()=>{if(!navigator.geolocation){toast('GPS is unavailable');return}navigator.geolocation.getCurrentPosition(pos=>loadMovement(pos.coords.latitude,pos.coords.longitude,'Current GPS location'),()=>toast('Could not get GPS location. Check browser permissions.'),{enableHighAccuracy:true,timeout:12000})};
 $('movementUseWaypoint').onclick=()=>{const s=stands.find(x=>x.id===selectedId);if(!s){toast('Select a saved waypoint first');return}loadMovement(s.lat,s.lon,s.name)};
-
+</script>
 </body></html>
