@@ -266,6 +266,18 @@ body.mapFullscreenOpen{overflow:hidden!important}
 .layerStatus{font-size:11px;color:#f2dfbd;margin-top:8px}
 @media(max-width:520px){.layerRows{grid-template-columns:minmax(0,1fr)}}
 
+
+.iso-gis-leaflet-popup .leaflet-popup-content-wrapper{background:#171411;color:#f2dfbd;border:1px solid #ff5a1f;border-radius:12px}
+.iso-gis-leaflet-popup .leaflet-popup-tip{background:#171411}
+.iso-gis-leaflet-popup .leaflet-popup-content{margin:13px 15px;max-height:260px;overflow:auto}
+.iso-gis-popup-title{font-weight:800;font-size:16px;color:#ff5a1f;margin-bottom:3px}
+.iso-gis-popup-type{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#b9a58d;margin-bottom:9px}
+.iso-gis-popup dl{display:grid;grid-template-columns: minmax(90px,42%) 1fr;gap:5px 9px;margin:0}
+.iso-gis-popup dt{font-size:11px;color:#b9a58d}
+.iso-gis-popup dd{font-size:12px;margin:0;overflow-wrap:anywhere}
+.iso-gis-popup a{color:#ff7847;text-decoration:underline}
+.iso-gis-popup-note{font-size:10px;color:#b9a58d;border-top:1px solid #574535;margin-top:9px;padding-top:7px}
+
 </style>
 </head>
 <body>
@@ -713,12 +725,12 @@ function weatherAtGps(){if(!navigator.geolocation){toast('GPS is unavailable');r
 // v1.3.1: draw NYS GIS feature layers as vector features for reliable visibility.
 const mapOverlayLayers = {};
 const mapOverlayConfig = {
-  decLands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[0], pro:false, style:{color:'#ff7a38',weight:2,opacity:1,fillColor:'#ff5a1f',fillOpacity:0.20}},
-  wma:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[2], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#328b4d',fillOpacity:0.28}},
-  wmu:      {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[4], pro:false, style:{color:'#ff5a1f',weight:2.5,opacity:0.95,fillColor:'#ff5a1f',fillOpacity:0.015}},
-  parks:    {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer', layers:[3], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#d28a38',fillOpacity:0.22}},
-  wetlands: {url:'https://gisservices.dec.ny.gov/arcgis/rest/services/erm/erm_wetlands/MapServer', layers:[0,1], pro:true, style:{color:'#5bc0eb',weight:1.5,opacity:1,fillColor:'#168bd2',fillOpacity:0.30}},
-  easements:{url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[1], pro:true, style:{color:'#bd8cff',weight:2,opacity:1,fillColor:'#9b59d0',fillOpacity:0.24}}
+  decLands: {title:'DEC State Lands',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[0], pro:false, style:{color:'#ff7a38',weight:2,opacity:1,fillColor:'#ff5a1f',fillOpacity:0.20}},
+  wma:      {title:'Wildlife Management Areas',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[2], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#328b4d',fillOpacity:0.28}},
+  wmu:      {title:'Wildlife Management Units',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[4], pro:false, style:{color:'#ff5a1f',weight:2.5,opacity:0.95,fillColor:'#ff5a1f',fillOpacity:0.015}},
+  parks:    {title:'New York State Parks',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer', layers:[3], pro:false, style:{color:'#f2dfbd',weight:2,opacity:1,fillColor:'#d28a38',fillOpacity:0.22}},
+  wetlands: {title:'Mapped Wetlands',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/erm/erm_wetlands/MapServer', layers:[0,1], pro:true, style:{color:'#5bc0eb',weight:1.5,opacity:1,fillColor:'#168bd2',fillOpacity:0.30}},
+  easements:{title:'Conservation Easements',url:'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer', layers:[1], pro:true, style:{color:'#bd8cff',weight:2,opacity:1,fillColor:'#9b59d0',fillOpacity:0.24}}
 };
 function hasProMapAccess(){
   return ['trial','pro_monthly','pro_yearly','tester','admin'].includes(currentMembershipTier);
@@ -739,6 +751,33 @@ function updateMapLayerEntitlements(){
 }
 function removeMapOverlay(key){
   if(mapOverlayLayers[key]&&map.hasLayer(mapOverlayLayers[key]))map.removeLayer(mapOverlayLayers[key]);
+}
+function escapeMapPopup(value){
+  return String(value==null?'':value).replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));
+}
+function mapPopupLabel(field){
+  const labels={UNIT:'Unit',UNITSQMILES:'Approx. area (sq. miles)',MOREINFO:'More information',WMA:'Wildlife Management Area',WILDAREA:'Wildlife area',CATEGORY:'Category',FACILITY:'Facility',FACILITY_N:'Facility number',CLASS:'Land classification',DESCRIPTIO:'Description',COUNTY:'County',REGION:'DEC region',ACRES:'Acres',PUBLICUSE:'Public use',MANAGE_BY:'Managed by',HUNT:'Hunting',HUNTINGYN:'Hunting allowed (source field)',WMU:'Wildlife Management Unit',COMMENTS:'Notes',AREA:'Area',PARK_NAME:'Park name',NAME:'Name',URL:'Official information',RMP_URL:'Recreation management plan'};
+  return labels[field]||field.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+}
+function buildMapFeaturePopup(feature,layerTitle){
+  const props=(feature&&feature.properties)||{};
+  const preferred=['WMA','WILDAREA','UNIT','FACILITY','CATEGORY','CLASS','COUNTY','REGION','ACRES','UNITSQMILES','MOREINFO','COMMENTS','DESCRIPTIO','PUBLICUSE','MANAGE_BY','HUNT','HUNTINGYN','WMU'];
+  const skip=/^(OBJECTID|OBJECTID_1|SHAPE|SHAPE\.|GLOBALID|FID|OID)/i;
+  const keys=Object.keys(props).filter(k=>!skip.test(k)&&props[k]!==null&&props[k]!==undefined&&String(props[k]).trim()!=='');
+  keys.sort((a,b)=>{const ai=preferred.indexOf(a),bi=preferred.indexOf(b);return (ai<0?999:ai)-(bi<0?999:bi);});
+  const titleField=['WMA','WILDAREA','UNIT','FACILITY','PARK_NAME','NAME','CATEGORY'].find(k=>props[k]!==null&&props[k]!==undefined&&String(props[k]).trim()!=='');
+  const title=titleField?props[titleField]:layerTitle;
+  let html='<div class=\"iso-gis-popup\"><div class=\"iso-gis-popup-title\">'+escapeMapPopup(title)+'</div><div class=\"iso-gis-popup-type\">'+escapeMapPopup(layerTitle)+'</div><dl>';
+  keys.slice(0,14).forEach(k=>{
+    const val=String(props[k]);
+    if(/^https?:\/\//i.test(val)&&/(URL|LINK)/i.test(k)){
+      html+='<dt>'+escapeMapPopup(mapPopupLabel(k))+'</dt><dd><a href=\"'+escapeMapPopup(val)+'\" target=\"_blank\" rel=\"noopener\">Open official details</a></dd>';
+    }else{
+      html+='<dt>'+escapeMapPopup(mapPopupLabel(k))+'</dt><dd>'+escapeMapPopup(val)+'</dd>';
+    }
+  });
+  html+='</dl><div class=\"iso-gis-popup-note\">Tap another outlined area to identify it. Verify current rules and access before entering.</div></div>';
+  return html;
 }
 function addMapOverlay(key){
   const cfg=mapOverlayConfig[key];
@@ -762,6 +801,12 @@ function addMapOverlay(key){
         precision:5,
         useCors:true
       });
+      if(typeof layer.bindPopup==='function'){
+        layer.bindPopup(function(featureLayer){
+          const feature=featureLayer&&featureLayer.feature?featureLayer.feature:featureLayer;
+          return buildMapFeaturePopup(feature,cfg.title||key);
+        },{maxWidth:300,minWidth:220, className:'iso-gis-leaflet-popup'});
+      }
       layer.on('loading',()=>{const status=$('mapLayerStatus');if(status)status.textContent='Loading '+(document.querySelector('[data-map-layer="'+key+'"]')?.closest('.layerRow')?.querySelector('.layerTitle')?.textContent||'map layer')+'…';});
       layer.on('load',()=>{const status=$('mapLayerStatus');if(status)status.textContent='Map layer loaded. Pan or zoom to explore the boundaries.';});
       layer.on('requesterror',e=>{const status=$('mapLayerStatus');if(status)status.textContent='NYS GIS request failed for '+key+'. Check signal or try again.';console.warn('In Sight GIS request error',key,e);});
