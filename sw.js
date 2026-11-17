@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'iso-shell-v140-pulldown-tools';
+const CACHE = 'iso-shell-v141-rnd-tools';
 const APP_ASSETS = [
   './manifest.webmanifest',
   './logo.png',
