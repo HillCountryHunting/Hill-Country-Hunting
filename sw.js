@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'iso-shell-v132-tap-identify';
+const CACHE = 'iso-shell-v140-pulldown-tools';
 const APP_ASSETS = [
   './manifest.webmanifest',
   './logo.png',

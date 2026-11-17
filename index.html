@@ -64,6 +64,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 12px 24px
 
 
 .panel,.mapPanel,.mapwrap,#map,.leaflet-container{min-width:0;max-width:100%}
+.iso-waypoint-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:2px solid #f2dfbd;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);background:#ff5a1f;box-shadow:0 2px 8px #000b;color:#17100b;font-size:18px;font-weight:900}
+.iso-waypoint-icon span{display:block;transform:rotate(45deg);line-height:1}
+
 .row{min-width:0;max-width:100%;flex-wrap:wrap}
 .row>*{min-width:0;max-width:100%}
 .weatherMetric{min-width:0;overflow-wrap:anywhere}
@@ -278,6 +281,24 @@ body.mapFullscreenOpen{overflow:hidden!important}
 .iso-gis-popup a{color:#ff7847;text-decoration:underline}
 .iso-gis-popup-note{font-size:10px;color:#b9a58d;border-top:1px solid #574535;margin-top:9px;padding-top:7px}
 
+
+/* v1.4.0 pull-down tool library: keep the hunting map as the home screen */
+.toolsMenu{width:calc(100% - 24px);max-width:1000px;margin:12px auto 4px;padding:0 12px}
+.toolsMenu>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid #9a5733;border-radius:14px;background:linear-gradient(120deg,#30231b,#171513);color:#f2dfbd;font-weight:900;letter-spacing:1px}
+.toolsMenu>summary::-webkit-details-marker{display:none}
+.toolsMenu>summary .toolsChevron{color:#ff5a1f;font-size:20px;transition:transform .2s}
+.toolsMenu[open]>summary .toolsChevron{transform:rotate(180deg)}
+.toolsMenuPanel{margin-top:8px;padding:13px;border:1px solid #514236;border-radius:16px;background:#171513;box-shadow:0 12px 30px #0008;display:grid;gap:13px}
+.toolCategoryTitle{font-size:11px;font-weight:900;letter-spacing:1.5px;color:#ff7a35;margin-bottom:7px}
+.toolButtonGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.toolButton{min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 5px;background:#211b17;border:1px solid #514236;border-radius:12px;color:#f2dfbd;text-align:center}
+.toolButton span{font-size:22px;line-height:1.1}.toolButton small{font-size:11px;line-height:1.2}
+.toolButton:active{border-color:#ff5a1f;background:#382319}
+.toolButton.comingSoon{opacity:.5;cursor:default;border-style:dashed}
+.toolButton.comingSoon small:after{content:' · SOON';color:#ff9a65;font-size:9px}
+@media(min-width:650px){.toolButtonGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:360px){.toolButtonGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -325,17 +346,45 @@ body.mapFullscreenOpen{overflow:hidden!important}
 </section>
 
 
-<nav class="dashboardDock" aria-label="Hunting tools">
-  <button type="button" data-open="localWeatherPanel" aria-label="Weather"><span>☀</span><small>Weather</small></button>
-  <button type="button" data-open="windPanel" aria-label="Wind"><span>〰</span><small>Wind</small></button>
-  <button type="button" data-open="thermalPanel" aria-label="Thermals"><span>♨</span><small>Thermals</small></button>
-  <button type="button" data-open="waypointPanel" aria-label="Waypoints"><span>⌖</span><small>Waypoints</small></button>
-  <button type="button" data-open="fieldResourcesPanel" aria-label="Bookmarks"><span>▣</span><small>Bookmarks</small></button>
-  <button type="button" data-open="trackerPanel" aria-label="Woods tracker"><span>⌁</span><small>Tracker</small></button>
-  <button type="button" data-open="photoPanel" aria-label="AI field assistant"><span>✦</span><small>AI Assistant</small></button>
-  <button type="button" data-open="propertyPanel" aria-label="Property and maps"><span>▤</span><small>Maps</small></button>
-<button type="button" data-open="deerMovementPanel" aria-label="Insight"><span>🦌</span><small>Insight</small></button>
-</nav>
+<details class="toolsMenu" id="toolsMenu">
+  <summary><span>☰ &nbsp; HUNTING TOOLS & FIELD WIDGETS</span><span class="toolsChevron">⌄</span></summary>
+  <div class="toolsMenuPanel">
+    <section><div class="toolCategoryTitle">MAP & SCOUTING</div><div class="toolButtonGrid">
+      <button class="toolButton" type="button" data-open="waypointPanel"><span>⌖</span><small>Waypoints</small></button>
+      <button class="toolButton" type="button" data-open="mapLayersPanel"><span>▤</span><small>Map Layers</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>📏</span><small>Distance & Radius</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>✏️</span><small>Map Drawing</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>⛰️</span><small>LiDAR Terrain</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🌽</span><small>Crop Map</small></button>
+    </div></section>
+    <section><div class="toolCategoryTitle">DEER INTELLIGENCE</div><div class="toolButtonGrid">
+      <button class="toolButton" type="button" data-open="deerMovementPanel"><span>🦌</span><small>Insight</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>📅</span><small>Rut Intelligence</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🔄</span><small>Stand Rotation</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🔥</span><small>Hunting Pressure</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>📈</span><small>Deer Timeline</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🌱</span><small>Food Plot Planner</small></button>
+    </div></section>
+    <section><div class="toolCategoryTitle">WEATHER & CONDITIONS</div><div class="toolButtonGrid">
+      <button class="toolButton" type="button" data-open="localWeatherPanel"><span>☀️</span><small>Weather</small></button>
+      <button class="toolButton" type="button" data-open="thermalPanel"><span>〰️</span><small>Wind & Thermals</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>⛈️</span><small>Severe Alerts</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🌅</span><small>Sunrise / Sunset</small></button>
+    </div></section>
+    <section><div class="toolCategoryTitle">HUNT MANAGEMENT</div><div class="toolButtonGrid">
+      <button class="toolButton" type="button" data-open="trackerPanel"><span>🥾</span><small>Woods Tracker</small></button>
+      <button class="toolButton" type="button" data-open="photoPanel"><span>✦</span><small>Field Assistant</small></button>
+      <button class="toolButton" type="button" data-open="fieldResourcesPanel"><span>▣</span><small>Field Resources</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🎯</span><small>Shot Recovery</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🩸</span><small>Blood Trail</small></button>
+    </div></section>
+    <section><div class="toolCategoryTitle">SAFETY & COMMUNICATION</div><div class="toolButtonGrid">
+      <button class="toolButton comingSoon" type="button" disabled><span>👥</span><small>Hunter Check-In</small></button>
+      <button class="toolButton comingSoon" type="button" disabled><span>🆘</span><small>Emergency Info</small></button>
+    </div></section>
+    <div class="hint">New tools will become available as we build and test them. Existing map and field tools are ready to use.</div>
+  </div>
+</details>
 <main class="dashboardMain">
 <section class="panel mapPanel">
 <h2>Hunting map <span class="pill" id="gpsStatus">GPS waiting</span></h2>
@@ -514,7 +563,7 @@ body.mapFullscreenOpen{overflow:hidden!important}
 <div class="row"><span class="pill" id="offlineStatus">Checking offline support…</span><button id="backupReminder">Backup reminder</button></div>
 </section>
 </main>
-<footer>In Sight Outdoors · v1.3.0 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
+<footer>In Sight Outdoors · v1.4.0 · Forecast wind is guidance, not a substitute for checking conditions in the field.</footer>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -543,7 +592,8 @@ function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).sli
 function deg(d){return ((d%360)+360)%360}
 function compass(d){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg(d)/45)%8]}
 function mph(kmh){return (kmh*.621371).toFixed(1)}
-function markerFor(s){const m=L.circleMarker([s.lat,s.lon],{radius:8,color:'#f2dfbd',weight:2,fillColor:'#ff5a1f',fillOpacity:1}).addTo(map);m.bindTooltip(s.name||s.type);m.on('click',()=>selectStand(s.id));s._marker=m}
+function waypointSymbol(type){const t=String(type||'').toLowerCase();if(t.includes('tree stand'))return '🌳';if(t.includes('saddle'))return '🪢';if(t.includes('blind'))return '⛺';if(t.includes('camera'))return '📷';if(t.includes('scrape'))return '🦌';if(t.includes('food'))return '🌽';if(t.includes('access'))return '🚶';if(t.includes('rub'))return '🌲';if(t.includes('bedding'))return '🛏️';if(t.includes('cross'))return '🐾';return '📍'}
+function markerFor(s){const icon=L.divIcon({className:'',html:`<div class="iso-waypoint-icon"><span>${waypointSymbol(s.type)}</span></div>`,iconSize:[34,34],iconAnchor:[17,32],tooltipAnchor:[0,-28]});const m=L.marker([s.lat,s.lon],{icon,keyboard:true,title:s.name||s.type,alt:(s.type||'Waypoint')+' waypoint'}).addTo(map);m.bindTooltip((s.name||s.type)+' · '+(s.type||'Waypoint'));m.on('click',()=>selectStand(s.id));s._marker=m}
 function addStand(lat,lon){pendingPoint={lat,lon};$('standName').focus();toast('Name your new map pin, then tap Save map pin')}
 function savePending(){if(!pendingPoint){toast('Tap the map first to place a pin');return}const s={id:uid(),name:$('standName').value.trim()||$('standType').value,type:$('standType').value,lat:pendingPoint.lat,lon:pendingPoint.lon,notes:'',access:'',created:Date.now()};stands.push(s);persist();pendingPoint=null;$('standName').value='';renderStands();selectStand(s.id);toast('Waypoint saved')}
 function renderStands(){stands.forEach(s=>{if(s._marker)map.removeLayer(s._marker);markerFor(s)});$('standList').innerHTML='';if(!stands.length){$('standList').innerHTML='<p class="muted">No saved waypoints yet. Tap the map to add your first stand.</p>';return}
@@ -992,7 +1042,7 @@ loadBookmarks();renderBookmarks();$('bookmarkSearch').addEventListener('input',r
 $('trackFollow').onclick=()=>{followTrack=!followTrack;$('trackFollow').classList.toggle('active',followTrack);$('trackFollow').setAttribute('aria-pressed',String(followTrack));$('trackFollow').textContent=followTrack?'◎ Follow GPS: ON':'◎ Follow GPS: OFF';if(followTrack&&track.lastFix)map.panTo([track.lastFix.lat,track.lastFix.lon])};
 $('trackStart').onclick=startTrack;$('trackPause').onclick=()=>{if(track.status==='recording')pauseTrack();else if(track.status==='paused')startTrack()};
 $('trackFinish').onclick=finishTrack;$('returnStart').onclick=returnToStart;$('clearTrack').onclick=clearTrack;
-trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=130-map-layers').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
+trackTick=setInterval(()=>{if(track.status==='recording')renderTrack()},1000);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=140-pulldown-tools').then(()=>$('offlineStatus').textContent='App shell caching enabled').catch(()=>$('offlineStatus').textContent='Offline caching unavailable');else $('offlineStatus').textContent='Offline caching unsupported';
 if(stands.length)refreshAll();
 
 let movementRequest=0;
@@ -1032,6 +1082,7 @@ document.addEventListener('click',function(e){
    const b=e.target.closest('[data-open]');
    if(!b)return;
    const id=b.getAttribute('data-open');
+   if(id==='mapLayersPanel'){const lp=document.getElementById('mapLayersPanel');if(lp){lp.hidden=!lp.hidden;document.getElementById('mapLayersToggle')?.setAttribute('aria-expanded',String(!lp.hidden));}document.getElementById('toolsMenu')?.removeAttribute('open');return;}
    const section=document.getElementById(id);
    if(!section)return;
    close();
@@ -1039,6 +1090,7 @@ document.addEventListener('click',function(e){
    section.style.display='block';
    body.appendChild(section);
    shade.classList.add('open');
+   document.getElementById('toolsMenu')?.removeAttribute('open');
    document.body.classList.add('popupOpen');
    shade.querySelector('.toolPopupCard').scrollTop=0;
  });
